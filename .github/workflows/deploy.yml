@@ -6,6 +6,12 @@ on:
   pull_request:
     branches: [ main ]
 
+# Grant GITHUB_TOKEN the permissions required to make a Pages deployment
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -23,7 +29,7 @@ jobs:
       run: flutter pub get
     
     - name: Build web
-      run: flutter build web --release --web-renderer html --base-href "/ifaa_app_template/"
+      run: flutter build web --release --web-renderer html --base-href "/IFAA/"
     
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
