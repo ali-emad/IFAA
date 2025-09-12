@@ -1,0 +1,10 @@
+export 'home_page.dart';
+export 'about_page.dart';
+export 'vision_page.dart';
+export 'events_page.dart';
+export 'gallery_page.dart';
+export 'membership_page.dart';
+export 'contact_page.dart';
+export 'news_page.dart';
+export 'event_detail_page.dart';
+export 'news_detail_page.dart';
