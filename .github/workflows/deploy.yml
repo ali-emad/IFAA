@@ -36,7 +36,9 @@ jobs:
         run: flutter pub get
       
       - name: Add Android platform support
-        run: flutter create --platforms android .
+        run: |
+          flutter create --platforms android . --project-name ifaa
+          flutter pub get
       
       - name: Build web
         run: flutter build web --release --web-renderer html --base-href "/IFAA/"
