@@ -71,19 +71,6 @@ ThemeData buildLightTheme() {
       ),
     ),
     
-    // Modern sports-style cards
-    cardTheme: const CardThemeData(
-      elevation: 0,
-      shadowColor: Colors.transparent,
-      surfaceTintColor: Colors.transparent,
-      margin: EdgeInsets.zero,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(16)),
-        side: BorderSide(color: SoccerThemeColors.borderGray, width: 1),
-      ),
-      clipBehavior: Clip.antiAlias,
-    ),
-    
     // Dynamic button themes
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
@@ -338,19 +325,6 @@ ThemeData buildDarkTheme() {
         color: Colors.white,
         letterSpacing: -0.5,
       ),
-    ),
-    
-    cardTheme: CardThemeData(
-      elevation: 0,
-      shadowColor: Colors.transparent,
-      surfaceTintColor: Colors.transparent,
-      color: colorScheme.surface,
-      margin: EdgeInsets.zero,
-      shape: RoundedRectangleBorder(
-        borderRadius: const BorderRadius.all(Radius.circular(16)),
-        side: BorderSide(color: Colors.white.withOpacity(0.1), width: 1),
-      ),
-      clipBehavior: Clip.antiAlias,
     ),
   );
 }
