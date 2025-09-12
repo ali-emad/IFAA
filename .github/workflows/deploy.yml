@@ -1,4 +1,4 @@
-name: Deploy to GitHub Pages
+name: Build and Deploy
 
 on:
   push:
@@ -38,10 +38,20 @@ jobs:
       - name: Build web
         run: flutter build web --release --web-renderer html --base-href "/IFAA/"
       
+      - name: Build APK
+        run: flutter build apk --release
+      
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ifaa-app-release
+          path: build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 30
+      
       - name: Setup Pages
         uses: actions/configure-pages@v4
         
-      - name: Upload artifact
+      - name: Upload web artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: './build/web'
