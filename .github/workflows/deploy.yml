@@ -40,37 +40,37 @@ jobs:
           flutter create --platforms android . --project-name ifaa
           flutter pub get
           
-          # Copy IFAA.ico to web directory for browser favicon
-          cp assets/icons/IFAA.ico web/favicon.ico
-          
           # Install ImageMagick for icon conversion
           sudo apt-get update
           sudo apt-get install -y imagemagick
           
-          # Convert IFAA.ico to PNG formats for web icons
-          convert assets/icons/IFAA.ico -resize 192x192 web/icons/Icon-192.png
-          convert assets/icons/IFAA.ico -resize 512x512 web/icons/Icon-512.png
-          convert assets/icons/IFAA.ico -resize 192x192 web/icons/Icon-maskable-192.png
-          convert assets/icons/IFAA.ico -resize 512x512 web/icons/Icon-maskable-512.png
+          # Convert ifaa-1.png to ICO format for web favicon
+          convert assets/icons/ifaa-1.png -resize 32x32 web/favicon.ico
+          
+          # Convert ifaa-1.png to different PNG formats for web icons
+          convert assets/icons/ifaa-1.png -resize 192x192 web/icons/Icon-192.png
+          convert assets/icons/ifaa-1.png -resize 512x512 web/icons/Icon-512.png
+          convert assets/icons/ifaa-1.png -resize 192x192 web/icons/Icon-maskable-192.png
+          convert assets/icons/ifaa-1.png -resize 512x512 web/icons/Icon-maskable-512.png
           
           # Update Kotlin version for compatibility
           cd android
           sed -i 's/ext.kotlin_version = .*/ext.kotlin_version = "1.9.24"/' build.gradle
           sed -i 's/id "org.jetbrains.kotlin.android" version .*/id "org.jetbrains.kotlin.android" version "1.9.24" apply false/' settings.gradle
           
-          # Copy IFAA.ico to Android app icon locations
+          # Copy ifaa-1.png to Android app icon locations
           mkdir -p app/src/main/res/mipmap-mdpi
           mkdir -p app/src/main/res/mipmap-hdpi  
           mkdir -p app/src/main/res/mipmap-xhdpi
           mkdir -p app/src/main/res/mipmap-xxhdpi
           mkdir -p app/src/main/res/mipmap-xxxhdpi
           
-          # Convert ICO to PNG for Android with proper sizes
-          convert ../assets/icons/IFAA.ico -resize 48x48 app/src/main/res/mipmap-mdpi/ic_launcher.png
-          convert ../assets/icons/IFAA.ico -resize 72x72 app/src/main/res/mipmap-hdpi/ic_launcher.png
-          convert ../assets/icons/IFAA.ico -resize 96x96 app/src/main/res/mipmap-xhdpi/ic_launcher.png
-          convert ../assets/icons/IFAA.ico -resize 144x144 app/src/main/res/mipmap-xxhdpi/ic_launcher.png
-          convert ../assets/icons/IFAA.ico -resize 192x192 app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
+          # Convert ifaa-1.png to proper Android PNG sizes
+          convert ../assets/icons/ifaa-1.png -resize 48x48 app/src/main/res/mipmap-mdpi/ic_launcher.png
+          convert ../assets/icons/ifaa-1.png -resize 72x72 app/src/main/res/mipmap-hdpi/ic_launcher.png
+          convert ../assets/icons/ifaa-1.png -resize 96x96 app/src/main/res/mipmap-xhdpi/ic_launcher.png
+          convert ../assets/icons/ifaa-1.png -resize 144x144 app/src/main/res/mipmap-xxhdpi/ic_launcher.png
+          convert ../assets/icons/ifaa-1.png -resize 192x192 app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
           
           cd ..
       
