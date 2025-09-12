@@ -1,4 +1,5 @@
 name: ifaa_app
+name: ifaa_app
 publish_to: 'none'
 description: Iranian Football Association Australia - Modern Flutter app template
 version: 1.0.0+1
