@@ -39,6 +39,12 @@ jobs:
         run: |
           flutter create --platforms android . --project-name ifaa
           flutter pub get
+          
+          # Update Kotlin version for compatibility
+          cd android
+          sed -i 's/ext.kotlin_version = .*/ext.kotlin_version = "1.9.24"/' build.gradle
+          sed -i 's/id "org.jetbrains.kotlin.android" version .*/id "org.jetbrains.kotlin.android" version "1.9.24" apply false/' settings.gradle
+          cd ..
       
       - name: Build web
         run: flutter build web --release --web-renderer html --base-href "/IFAA/"
