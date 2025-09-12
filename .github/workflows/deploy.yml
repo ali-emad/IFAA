@@ -40,10 +40,30 @@ jobs:
           flutter create --platforms android . --project-name ifaa
           flutter pub get
           
+          # Copy IFAA.ico to web directory for browser favicon
+          cp assets/icons/IFAA.ico web/favicon.ico
+          
           # Update Kotlin version for compatibility
           cd android
           sed -i 's/ext.kotlin_version = .*/ext.kotlin_version = "1.9.24"/' build.gradle
           sed -i 's/id "org.jetbrains.kotlin.android" version .*/id "org.jetbrains.kotlin.android" version "1.9.24" apply false/' settings.gradle
+          
+          # Copy IFAA.ico to Android app icon locations
+          mkdir -p app/src/main/res/mipmap-mdpi
+          mkdir -p app/src/main/res/mipmap-hdpi  
+          mkdir -p app/src/main/res/mipmap-xhdpi
+          mkdir -p app/src/main/res/mipmap-xxhdpi
+          mkdir -p app/src/main/res/mipmap-xxxhdpi
+          
+          # Convert ICO to PNG for Android (using ImageMagick if available)
+          if command -v convert &> /dev/null; then
+            convert ../assets/icons/IFAA.ico -resize 48x48 app/src/main/res/mipmap-mdpi/ic_launcher.png
+            convert ../assets/icons/IFAA.ico -resize 72x72 app/src/main/res/mipmap-hdpi/ic_launcher.png
+            convert ../assets/icons/IFAA.ico -resize 96x96 app/src/main/res/mipmap-xhdpi/ic_launcher.png
+            convert ../assets/icons/IFAA.ico -resize 144x144 app/src/main/res/mipmap-xxhdpi/ic_launcher.png
+            convert ../assets/icons/IFAA.ico -resize 192x192 app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
+          fi
+          
           cd ..
       
       - name: Build web
