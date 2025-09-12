@@ -1,7 +1,8 @@
 name: ifaa_app
 publish_to: 'none'
 description: Iranian Football Association Australia - Modern Flutter app template
-version: 0.1.0+1
+version: 1.0.0+1
+homepage: https://your-username.github.io/ifaa_app_template
 
 environment:
   sdk: ">=3.4.0 <4.0.0"
