@@ -18,8 +18,51 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  # Build job for Android and Web
-  build-android-web:
+  # Build job for Web
+  build-web:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+          cache: true
+      
+      - name: Install dependencies
+        run: flutter pub get
+      
+      - name: Setup web icons
+        run: |
+          # Install ImageMagick for icon conversion
+          sudo apt-get update
+          sudo apt-get install -y imagemagick
+          
+          # Convert ifaa-1.png to ICO format for web favicon
+          convert assets/icons/ifaa-1.png -resize 32x32 web/favicon.ico
+          
+          # Convert ifaa-1.png to different PNG formats for web icons
+          convert assets/icons/ifaa-1.png -resize 192x192 web/icons/Icon-192.png
+          convert assets/icons/ifaa-1.png -resize 512x512 web/icons/Icon-512.png
+          convert assets/icons/ifaa-1.png -resize 192x192 web/icons/Icon-maskable-192.png
+          convert assets/icons/ifaa-1.png -resize 512x512 web/icons/Icon-maskable-512.png
+      
+      - name: Build web
+        run: flutter build web --release --web-renderer html --base-href "/IFAA/"
+      
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+        
+      - name: Upload web artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './build/web'
+
+  # Build job for Android
+  build-android:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -47,21 +90,12 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y imagemagick
           
-          # Convert ifaa-1.png to ICO format for web favicon
-          convert assets/icons/ifaa-1.png -resize 32x32 web/favicon.ico
-          
-          # Convert ifaa-1.png to different PNG formats for web icons
-          convert assets/icons/ifaa-1.png -resize 192x192 web/icons/Icon-192.png
-          convert assets/icons/ifaa-1.png -resize 512x512 web/icons/Icon-512.png
-          convert assets/icons/ifaa-1.png -resize 192x192 web/icons/Icon-maskable-192.png
-          convert assets/icons/ifaa-1.png -resize 512x512 web/icons/Icon-maskable-512.png
-          
           # Update Kotlin version for compatibility
           cd android
           sed -i 's/ext.kotlin_version = .*/ext.kotlin_version = "1.9.24"/' build.gradle
           sed -i 's/id "org.jetbrains.kotlin.android" version .*/id "org.jetbrains.kotlin.android" version "1.9.24" apply false/' settings.gradle
           
-          # Copy iffa-1.png to Android app icon locations
+          # Copy ifaa-1.png to Android app icon locations
           mkdir -p app/src/main/res/mipmap-mdpi
           mkdir -p app/src/main/res/mipmap-hdpi  
           mkdir -p app/src/main/res/mipmap-xhdpi
@@ -77,9 +111,6 @@ jobs:
           
           cd ..
       
-      - name: Build web
-        run: flutter build web --release --web-renderer html --base-href "/IFAA/"
-      
       - name: Build APK
         run: flutter build apk --release
       
@@ -89,14 +120,6 @@ jobs:
           name: ifaa-app-android-release
           path: build/app/outputs/flutter-apk/app-release.apk
           retention-days: 30
-      
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
-        
-      - name: Upload web artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: './build/web'
 
   # Build job for iOS
   build-ios:
@@ -166,7 +189,7 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-    needs: build-android-web
+    needs: build-web
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
