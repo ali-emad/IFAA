@@ -173,9 +173,24 @@ jobs:
       - name: Build iOS app (no signing)
         run: |
           flutter build ios --release --no-codesign
+          
+          # Create IPA file for installation
+          cd build/ios/iphoneos
+          mkdir -p Payload
+          cp -r Runner.app Payload/
+          zip -r ../../../IFAA-iOS.ipa Payload/
+          cd ../../..
         continue-on-error: true
       
-      - name: Upload iOS build artifact
+      - name: Upload iOS IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ifaa-app-ios-ipa
+          path: IFAA-iOS.ipa
+          retention-days: 30
+        continue-on-error: true
+        
+      - name: Upload iOS build artifact (for development)
         uses: actions/upload-artifact@v4
         with:
           name: ifaa-app-ios-build

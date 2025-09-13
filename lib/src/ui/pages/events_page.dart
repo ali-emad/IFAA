@@ -434,6 +434,7 @@ class _FeaturedEventCard extends StatelessWidget {
                               requirement,
                               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                 height: 1.5,
+                                color: const Color(0xFF1F2937), // Explicitly set dark color for better readability
                               ),
                             ),
                           ),
@@ -528,7 +529,7 @@ class _EventDetailRow extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF6B7280),
+                  color: Color(0xFF374151), // Better contrast than original light gray
                   letterSpacing: 0.5,
                 ),
               ),

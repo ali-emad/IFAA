@@ -11,6 +11,41 @@ class _GalleryPageState extends State<GalleryPage> {
   String _selectedCategory = 'All';
   final List<String> _categories = ['All', 'Matches', 'Training', 'Events', 'Awards'];
   
+  // Football-related images from Unsplash
+  final List<Map<String, String>> _footballImages = [
+    // Match photos
+    {'url': 'https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=600&h=600&fit=crop', 'title': 'Championship Match', 'category': 'Matches'},
+    {'url': 'https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=600&h=600&fit=crop', 'title': 'Goal Celebration', 'category': 'Matches'},
+    {'url': 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=600&h=600&fit=crop', 'title': 'Team Victory', 'category': 'Matches'},
+    {'url': 'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=600&h=600&fit=crop', 'title': 'Stadium Match', 'category': 'Matches'},
+    {'url': 'https://images.unsplash.com/photo-1489944440615-453fc2b6a9a9?w=600&h=600&fit=crop', 'title': 'Derby Game', 'category': 'Matches'},
+    {'url': 'https://images.unsplash.com/photo-1553778263-73a83bab9b0c?w=600&h=600&fit=crop', 'title': 'Final Whistle', 'category': 'Matches'},
+    
+    // Training photos
+    {'url': 'https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=600&h=600&fit=crop', 'title': 'Skills Training', 'category': 'Training'},
+    {'url': 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&h=600&fit=crop', 'title': 'Dribbling Practice', 'category': 'Training'},
+    {'url': 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=600&h=600&fit=crop', 'title': 'Youth Training', 'category': 'Training'},
+    {'url': 'https://images.unsplash.com/photo-1575361204480-aadea25e6e68?w=600&h=600&fit=crop', 'title': 'Team Practice', 'category': 'Training'},
+    {'url': 'https://images.unsplash.com/photo-1529900748604-07564a03e7a6?w=600&h=600&fit=crop', 'title': 'Ball Control', 'category': 'Training'},
+    {'url': 'https://images.unsplash.com/photo-1484318571209-661cf29a69ea?w=600&h=600&fit=crop', 'title': 'Fitness Training', 'category': 'Training'},
+    
+    // Events photos
+    {'url': 'https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=600&h=600&fit=crop', 'title': 'Award Ceremony', 'category': 'Events'},
+    {'url': 'https://images.unsplash.com/photo-1582296650261-6e44e82bdca1?w=600&h=600&fit=crop', 'title': 'Community Event', 'category': 'Events'},
+    {'url': 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=600&h=600&fit=crop', 'title': 'Youth Academy Graduation', 'category': 'Events'},
+    {'url': 'https://images.unsplash.com/photo-1459865264687-595d652de67e?w=600&h=600&fit=crop', 'title': 'Season Opening', 'category': 'Events'},
+    {'url': 'https://images.unsplash.com/photo-1516401266446-6432a8a07d41?w=600&h=600&fit=crop', 'title': 'Fan Meet & Greet', 'category': 'Events'},
+    {'url': 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&h=600&fit=crop', 'title': 'Charity Match', 'category': 'Events'},
+    
+    // Awards photos
+    {'url': 'https://images.unsplash.com/photo-1579952363873-27d3bfad9c0d?w=600&h=600&fit=crop', 'title': 'Golden Boot Award', 'category': 'Awards'},
+    {'url': 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=600&h=600&fit=crop', 'title': 'Championship Trophy', 'category': 'Awards'},
+    {'url': 'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=600&h=600&fit=crop', 'title': 'Player of the Year', 'category': 'Awards'},
+    {'url': 'https://images.unsplash.com/photo-1526232761682-d26066ba4da3?w=600&h=600&fit=crop', 'title': 'Team Achievement', 'category': 'Awards'},
+    {'url': 'https://images.unsplash.com/photo-1614107151491-6876eecbff89?w=600&h=600&fit=crop', 'title': 'Medal Ceremony', 'category': 'Awards'},
+    {'url': 'https://images.unsplash.com/photo-1571835781869-48ba5bce1f98?w=600&h=600&fit=crop', 'title': 'Victory Celebration', 'category': 'Awards'},
+  ];
+  
   @override
   Widget build(BuildContext context) {
     return CustomScrollView(
@@ -57,7 +92,7 @@ class _GalleryPageState extends State<GalleryPage> {
                       Text(
                         'Explore our collection of memorable moments from matches, training, and community events',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                          color: const Color(0xFF374151), // Better contrast than opacity
                         ),
                       ),
                     ],
@@ -117,13 +152,24 @@ class _GalleryPageState extends State<GalleryPage> {
             ),
             delegate: SliverChildBuilderDelegate(
               (context, index) {
+                final filteredImages = _selectedCategory == 'All' 
+                    ? _footballImages 
+                    : _footballImages.where((img) => img['category'] == _selectedCategory).toList();
+                
+                if (index >= filteredImages.length) {
+                  return const SizedBox.shrink();
+                }
+                
+                final imageData = filteredImages[index];
                 return _PhotoCard(
-                  imageUrl: 'https://picsum.photos/seed/gallery$index/600/600',
-                  title: 'Photo ${index + 1}',
-                  category: _categories[(index % (_categories.length - 1)) + 1],
+                  imageUrl: imageData['url']!,
+                  title: imageData['title']!,
+                  category: imageData['category']!,
                 );
               },
-              childCount: 24,
+              childCount: _selectedCategory == 'All' 
+                  ? _footballImages.length 
+                  : _footballImages.where((img) => img['category'] == _selectedCategory).length,
             ),
           ),
         ),
