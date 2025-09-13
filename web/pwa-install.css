@@ -1,0 +1,253 @@
+/* PWA Install Banner Styles for IFAA App */
+
+.pwa-banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(135deg, #1E3A8A, #059669);
+  color: white;
+  padding: 16px;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+  z-index: 9999;
+  transform: translateY(0);
+  transition: transform 0.3s ease-in-out;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.pwa-banner.hidden {
+  transform: translateY(100%);
+}
+
+.pwa-banner-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.pwa-banner-info {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.pwa-banner-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  margin-right: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.pwa-banner-text h3 {
+  margin: 0 0 4px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+}
+
+.pwa-banner-text p {
+  margin: 0;
+  font-size: 14px;
+  opacity: 0.9;
+  color: white;
+}
+
+.pwa-banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pwa-install-button {
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
+}
+
+.pwa-install-button:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-1px);
+}
+
+.pwa-dismiss-button {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+.pwa-dismiss-button:hover {
+  opacity: 1;
+}
+
+/* iOS Install Banner */
+.ios-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(135deg, #1E3A8A, #059669);
+  color: white;
+  padding: 12px 16px;
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
+  z-index: 9999;
+  transform: translateY(0);
+  transition: transform 0.3s ease-in-out;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.ios-banner.hidden {
+  transform: translateY(-100%);
+}
+
+.ios-banner-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.ios-banner-info {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.ios-banner-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  margin-right: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.ios-banner-text h3 {
+  margin: 0 0 2px 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: white;
+}
+
+.ios-banner-text p {
+  margin: 0;
+  font-size: 13px;
+  opacity: 0.9;
+  color: white;
+}
+
+.ios-share-icon {
+  font-weight: bold;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin: 0 2px;
+}
+
+.ios-dismiss-button {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+.ios-dismiss-button:hover {
+  opacity: 1;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 480px) {
+  .pwa-banner {
+    padding: 12px;
+  }
+  
+  .pwa-banner-content {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
+  
+  .pwa-banner-info {
+    justify-content: center;
+  }
+  
+  .pwa-banner-text h3 {
+    font-size: 15px;
+  }
+  
+  .pwa-banner-text p {
+    font-size: 13px;
+  }
+  
+  .ios-banner {
+    padding: 10px 12px;
+  }
+  
+  .ios-banner-text h3 {
+    font-size: 14px;
+  }
+  
+  .ios-banner-text p {
+    font-size: 12px;
+  }
+}
+
+/* Hide on very small screens */
+@media (max-width: 320px) {
+  .pwa-banner-text p,
+  .ios-banner-text p {
+    display: none;
+  }
+}
+
+/* Animation for entrance */
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.pwa-banner:not(.hidden) {
+  animation: slideUp 0.3s ease-out;
+}
+
+.ios-banner:not(.hidden) {
+  animation: slideDown 0.3s ease-out;
+}

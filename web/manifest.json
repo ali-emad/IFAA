@@ -8,6 +8,18 @@
     "description": "Iranian Football Association Australia - Building champions, fostering community, and celebrating football.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
+    "categories": ["sports", "social"],
+    "lang": "en",
+    "scope": "/",
+    "screenshots": [
+        {
+            "src": "icons/Icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "form_factor": "wide",
+            "label": "IFAA App Screenshot"
+        }
+    ],
     "icons": [
         {
             "src": "icons/Icon-192.png",
