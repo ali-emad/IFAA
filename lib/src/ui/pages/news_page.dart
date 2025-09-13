@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../models/post.dart';
@@ -85,7 +84,7 @@ class _NewsPageState extends State<NewsPage> {
                       Text(
                         'Stay updated with IFAA announcements, matches, and community updates',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                          color: const Color(0xFF374151), // Better contrast than opacity
                         ),
                       ),
                     ],
@@ -345,7 +344,7 @@ class _ArticleCard extends StatelessWidget {
                     Text(
                       post.excerpt,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                        color: const Color(0xFF374151), // Better contrast than opacity
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -356,13 +355,13 @@ class _ArticleCard extends StatelessWidget {
                         Icon(
                           Icons.access_time,
                           size: 14,
-                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                          color: const Color(0xFF6B7280), // Lighter gray for subtle info
                         ),
                         const SizedBox(width: 4),
                         Text(
                           DateFormat('MMM dd').format(post.date),
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                            color: const Color(0xFF6B7280), // Lighter gray for subtle info
                           ),
                         ),
                         const Spacer(),
@@ -464,26 +463,26 @@ class _ArticleDetailView extends StatelessWidget {
                     Icon(
                       Icons.access_time,
                       size: 16,
-                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                      color: const Color(0xFF6B7280), // Lighter gray for metadata
                     ),
                     const SizedBox(width: 4),
                     Text(
                       DateFormat('MMM dd, yyyy').format(post.date),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                        color: const Color(0xFF6B7280), // Lighter gray for metadata
                       ),
                     ),
                     const SizedBox(width: 16),
                     Icon(
                       Icons.article,
                       size: 16,
-                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                      color: const Color(0xFF6B7280), // Lighter gray for metadata
                     ),
                     const SizedBox(width: 4),
                     Text(
                       'IFAA News',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                        color: const Color(0xFF6B7280), // Lighter gray for metadata
                       ),
                     ),
                   ],
@@ -496,6 +495,7 @@ class _ArticleDetailView extends StatelessWidget {
                   post.content,
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     height: 1.6,
+                    color: const Color(0xFF1F2937), // Explicitly set dark color for better readability
                   ),
                 ),
                 

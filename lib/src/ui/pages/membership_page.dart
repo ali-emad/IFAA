@@ -177,7 +177,7 @@ class _MembershipPageState extends State<MembershipPage> with TickerProviderStat
                       Text(
                         'Join Australia\'s premier Iranian football community',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: const Color(0xFF6B7280),
+                          color: const Color(0xFF374151),
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -241,7 +241,7 @@ class _MembershipPageState extends State<MembershipPage> with TickerProviderStat
                       Text(
                         'By continuing, you agree to our Terms of Service and Privacy Policy',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: const Color(0xFF6B7280),
+                          color: const Color(0xFF374151),
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -536,9 +536,16 @@ class _MembershipPageState extends State<MembershipPage> with TickerProviderStat
                 child: FilledButton.icon(
                   onPressed: () => _makePayment('Membership Renewal'),
                   icon: const Icon(Icons.payment),
-                  label: const Text('Renew Membership'),
+                  label: const Text(
+                    'Renew Membership',
+                    style: TextStyle(
+                      color: Colors.white, // Explicitly set white text for better contrast
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                   style: FilledButton.styleFrom(
                     backgroundColor: const Color(0xFF1E3A8A),
+                    foregroundColor: Colors.white, // Ensure white text and icons
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
                 ),
@@ -888,7 +895,7 @@ class _StatCard extends StatelessWidget {
             style: const TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF6B7280),
+              color: Color(0xFF374151),
             ),
           ),
           const SizedBox(height: 4),
@@ -961,7 +968,7 @@ class _PaymentCard extends StatelessWidget {
                       payment.method,
                       style: TextStyle(
                         fontSize: isCompact ? 12 : 14,
-                        color: const Color(0xFF6B7280),
+                        color: const Color(0xFF374151),
                       ),
                     ),
                     const Text(' • '),
@@ -969,7 +976,7 @@ class _PaymentCard extends StatelessWidget {
                       _formatDate(payment.date),
                       style: TextStyle(
                         fontSize: isCompact ? 12 : 14,
-                        color: const Color(0xFF6B7280),
+                        color: const Color(0xFF374151),
                       ),
                     ),
                   ],
@@ -1095,7 +1102,7 @@ class _ProfileField extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF6B7280),
+                    color: Color(0xFF374151),
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -1112,7 +1119,7 @@ class _ProfileField extends StatelessWidget {
           ),
           const Icon(
             Icons.edit,
-            color: Color(0xFF6B7280),
+            color: Color(0xFF374151),
             size: 20,
           ),
         ],
@@ -1176,7 +1183,7 @@ class _PaymentOptionCard extends StatelessWidget {
                 description,
                 style: const TextStyle(
                   fontSize: 12,
-                  color: Color(0xFF6B7280),
+                  color: Color(0xFF374151),
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -1244,7 +1251,7 @@ class _TimelineItem extends StatelessWidget {
                   description,
                   style: const TextStyle(
                     fontSize: 14,
-                    color: Color(0xFF6B7280),
+                    color: Color(0xFF374151),
                   ),
                 ),
               ],
@@ -1254,7 +1261,7 @@ class _TimelineItem extends StatelessWidget {
             '${date.day}/${date.month}/${date.year}',
             style: const TextStyle(
               fontSize: 12,
-              color: Color(0xFF6B7280),
+              color: Color(0xFF374151),
             ),
           ),
         ],

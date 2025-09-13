@@ -113,7 +113,7 @@ class VisionPage extends StatelessWidget {
                 Text(
                   'Our vision is built on three fundamental pillars that guide everything we do',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: const Color(0xFF6B7280),
+                    color: const Color(0xFF374151),
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -430,6 +430,7 @@ class _VisionCardState extends State<_VisionCard>
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     height: 1.6,
                     fontWeight: FontWeight.w500,
+                    color: const Color(0xFF1F2937), // Explicitly set dark color for better readability
                   ),
                 ),
 
@@ -483,6 +484,7 @@ class _VisionCardState extends State<_VisionCard>
                                   .bodyMedium
                                   ?.copyWith(
                                     height: 1.6,
+                                    color: const Color(0xFF1F2937), // Explicitly set dark color for better readability
                                   ),
                             ),
                           ],
@@ -565,6 +567,7 @@ class _VisionCardState extends State<_VisionCard>
                                         .bodySmall
                                         ?.copyWith(
                                           fontWeight: FontWeight.w500,
+                                          color: const Color(0xFF1F2937), // Explicitly set dark color for better readability
                                         ),
                                   ),
                                 ),

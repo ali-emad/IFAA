@@ -11,7 +11,8 @@ class SoccerThemeColors {
   // Neutral colors
   static const Color darkCharcoal = Color(0xFF1F2937);    // Dark backgrounds
   static const Color lightGray = Color(0xFFF9FAFB);       // Light backgrounds
-  static const Color mediumGray = Color(0xFF6B7280);      // Secondary text
+  static const Color mediumGray = Color(0xFF6B7280);      // Secondary text (light)
+  static const Color darkGray = Color(0xFF374151);        // Secondary text (darker)
   static const Color borderGray = Color(0xFFE5E7EB);      // Borders
   
   // Gradient combinations
@@ -66,7 +67,7 @@ ThemeData buildLightTheme() {
         letterSpacing: -0.5,
       ),
       actionsIconTheme: const IconThemeData(
-        color: SoccerThemeColors.mediumGray,
+        color: SoccerThemeColors.darkGray,
         size: 24,
       ),
     ),
@@ -123,7 +124,7 @@ ThemeData buildLightTheme() {
         return const TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.w500,
-          color: SoccerThemeColors.mediumGray,
+          color: SoccerThemeColors.darkGray,
         );
       }),
     ),
@@ -137,7 +138,7 @@ ThemeData buildLightTheme() {
         size: 24,
       ),
       unselectedIconTheme: const IconThemeData(
-        color: SoccerThemeColors.mediumGray,
+        color: SoccerThemeColors.darkGray,
         size: 24,
       ),
       selectedLabelTextStyle: const TextStyle(
@@ -148,7 +149,7 @@ ThemeData buildLightTheme() {
       unselectedLabelTextStyle: const TextStyle(
         fontSize: 13,
         fontWeight: FontWeight.w500,
-        color: SoccerThemeColors.mediumGray,
+        color: SoccerThemeColors.darkGray,
       ),
     ),
     
@@ -225,14 +226,14 @@ ThemeData buildLightTheme() {
       bodyMedium: TextStyle(
         fontSize: 14,
         fontWeight: FontWeight.w400,
-        color: SoccerThemeColors.mediumGray,
+        color: SoccerThemeColors.darkCharcoal,
         letterSpacing: 0.25,
         height: 1.5,
       ),
       bodySmall: TextStyle(
         fontSize: 12,
         fontWeight: FontWeight.w400,
-        color: SoccerThemeColors.mediumGray,
+        color: SoccerThemeColors.darkCharcoal,
         letterSpacing: 0.4,
         height: 1.4,
       ),
@@ -247,13 +248,13 @@ ThemeData buildLightTheme() {
       labelMedium: TextStyle(
         fontSize: 12,
         fontWeight: FontWeight.w600,
-        color: SoccerThemeColors.mediumGray,
+        color: SoccerThemeColors.darkCharcoal,
         letterSpacing: 0.5,
       ),
       labelSmall: TextStyle(
         fontSize: 10,
         fontWeight: FontWeight.w600,
-        color: SoccerThemeColors.mediumGray,
+        color: SoccerThemeColors.darkCharcoal,
         letterSpacing: 0.5,
       ),
     ),

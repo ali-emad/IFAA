@@ -235,7 +235,7 @@ class HomePage extends StatelessWidget {
                 Text(
                   'Discover our programs and services designed for the Iranian football community',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: const Color(0xFF6B7280),
+                    color: const Color(0xFF374151),
                   ),
                 ),
                 const SizedBox(height: 32),
@@ -437,6 +437,7 @@ class _StatCard extends StatelessWidget {
           label,
           style: Theme.of(context).textTheme.labelMedium?.copyWith(
             letterSpacing: 1,
+            color: const Color(0xFF1F2937), // Explicitly set dark color for better readability
           ),
           textAlign: TextAlign.center,
         ),
@@ -530,7 +531,9 @@ class _FeatureCard extends StatelessWidget {
                 Expanded(
                   child: Text(
                     description,
-                    style: Theme.of(context).textTheme.bodyMedium,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: const Color(0xFF1F2937), // Explicitly set dark color for better readability
+                    ),
                   ),
                 ),
                 

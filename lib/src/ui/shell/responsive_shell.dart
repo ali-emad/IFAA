@@ -100,21 +100,7 @@ class _ResponsiveShellState extends State<ResponsiveShell>
           ),
         ),
         bottomNavigationBar: isWide ? null : _buildSoccerBottomNav(context),
-        floatingActionButton: widget.shell.currentIndex == 5 // Join page
-            ? ScaleTransition(
-                scale: _fabController,
-                child: FloatingActionButton.extended(
-                  onPressed: () => context.go('/membership'),
-                  backgroundColor: const Color(0xFF10B981),
-                  foregroundColor: Colors.white,
-                  icon: const Icon(Icons.sports_soccer),
-                  label: const Text(
-                    'JOIN TEAM',
-                    style: TextStyle(fontWeight: FontWeight.w700),
-                  ),
-                ),
-              )
-            : null,
+        floatingActionButton: null, // Removed floating action button from membership page as it conflicts with page content
       );
     });
   }
@@ -184,7 +170,7 @@ class _ResponsiveShellState extends State<ResponsiveShell>
             ),
           ),
         IconButton(
-          icon: const Icon(Icons.search, color: Color(0xFF6B7280), size: 22), // Increased from 20 to 22
+          icon: const Icon(Icons.search, color: Color(0xFF374151), size: 22), // Increased from 20 to 22
           onPressed: () {
             // Search functionality
           },
@@ -217,7 +203,7 @@ class _ResponsiveShellState extends State<ResponsiveShell>
             size: 22, // Increased back to 22 to match mobile footer
             color: isSelected 
                 ? const Color(0xFF1E3A8A)
-                : const Color(0xFF6B7280),
+                : const Color(0xFF374151),
           ),
           label: Text(
             destination.label,
@@ -226,7 +212,7 @@ class _ResponsiveShellState extends State<ResponsiveShell>
               fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
               color: isSelected 
                   ? const Color(0xFF1E3A8A)
-                  : const Color(0xFF6B7280),
+                  : const Color(0xFF374151),
             ),
           ),
           style: TextButton.styleFrom(
@@ -292,7 +278,7 @@ class _ResponsiveShellState extends State<ResponsiveShell>
                           isSelected ? destination.selectedIcon : destination.icon,
                           color: isSelected 
                               ? const Color(0xFF1E3A8A)
-                              : const Color(0xFF6B7280),
+                              : const Color(0xFF374151),
                           size: 22,
                           key: ValueKey('$index-$isSelected'),
                         ),
@@ -305,7 +291,7 @@ class _ResponsiveShellState extends State<ResponsiveShell>
                           fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                           color: isSelected 
                               ? const Color(0xFF1E3A8A)
-                              : const Color(0xFF6B7280),
+                              : const Color(0xFF374151),
                         ),
                       ),
                     ],
