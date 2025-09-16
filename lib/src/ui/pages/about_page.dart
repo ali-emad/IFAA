@@ -133,54 +133,54 @@ class AboutPage extends StatelessWidget {
           ),
           
           // WHO WE ARE Section
-          SliverToBoxAdapter(
+          const SliverToBoxAdapter(
             child: _SectionCard(
               title: 'WHO WE ARE',
               icon: Icons.people,
-              color: const Color(0xFF059669),
+              color: Color(0xFF059669),
               content: 'Iranian Football Association Australia (IFAA) was established by founding members (Iranian Community Ambassadors) in August 2014, prior to the Asian Cup conducted in Sydney during January 2015.',
             ),
           ),
           
           // OBJECTIVES Section
-          SliverToBoxAdapter(
+          const SliverToBoxAdapter(
             child: _SectionCard(
               title: 'OUR OBJECTIVES',
               icon: Icons.flag,
-              color: const Color(0xFF1E3A8A),
+              color: Color(0xFF1E3A8A),
               content: '',
               isObjectives: true,
             ),
           ),
           
           // FACTS Section
-          SliverToBoxAdapter(
+          const SliverToBoxAdapter(
             child: _SectionCard(
               title: 'FACTS ABOUT IRAN & IRANIAN FOOTBALL',
               icon: Icons.sports_soccer,
-              color: const Color(0xFFEA580C),
+              color: Color(0xFFEA580C),
               content: '',
               isFacts: true,
             ),
           ),
           
           // COMMUNITY ISSUES Section
-          SliverToBoxAdapter(
+          const SliverToBoxAdapter(
             child: _SectionCard(
               title: 'COMMUNITY ISSUES WE ADDRESS',
               icon: Icons.build,
-              color: const Color(0xFF7C3AED),
+              color: Color(0xFF7C3AED),
               content: '',
               isIssues: true,
             ),
           ),
           
           // PROGRAM SUMMARY Section
-          SliverToBoxAdapter(
+          const SliverToBoxAdapter(
             child: _SectionCard(
               title: 'PROGRAM SUMMARY',
               icon: Icons.emoji_events,
-              color: const Color(0xFF059669),
+              color: Color(0xFF059669),
               content: 'An integrated program is developed to address the Australian Iranian Community football/futsal needs. IFAA has participated in various tournaments and friendlies since 2015, building solid friendships between various levels of Iranian communities.',
             ),
           ),

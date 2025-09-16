@@ -120,13 +120,13 @@ class VisionPage extends StatelessWidget {
                 const SizedBox(height: 40),
 
                 // Vision Card 1: Community Engagement
-                _VisionCard(
+                const _VisionCard(
                   title: 'COMMUNITY ENGAGEMENT',
                   subtitle: 'Inclusiveness & Excellence Through Football',
                   description: 'Engaging with the community with focus on inclusiveness and capitalizing on excellence, potential and enjoyment through football.',
                   icon: Icons.people,
-                  gradient: const [Color(0xFF1E3A8A), Color(0xFF3B82F6)],
-                  benefits: const [
+                  gradient: [Color(0xFF1E3A8A), Color(0xFF3B82F6)],
+                  benefits: [
                     'Building inclusive football communities',
                     'Celebrating diversity and cultural heritage',
                     'Creating opportunities for all skill levels',
@@ -140,13 +140,13 @@ class VisionPage extends StatelessWidget {
                 const SizedBox(height: 32),
 
                 // Vision Card 2: High Performance
-                _VisionCard(
+                const _VisionCard(
                   title: 'HIGH PERFORMANCE PATHWAY',
                   subtitle: 'Premier Talent Development in Australia',
                   description: 'High Performance objective: ensure the IFAA has the premier community talent development pathway in Australia.',
                   icon: Icons.trending_up,
-                  gradient: const [Color(0xFF059669), Color(0xFF10B981)],
-                  benefits: const [
+                  gradient: [Color(0xFF059669), Color(0xFF10B981)],
+                  benefits: [
                     'Professional coaching and training programs',
                     'Structured talent identification and development',
                     'Pathway to elite level football',
@@ -160,13 +160,13 @@ class VisionPage extends StatelessWidget {
                 const SizedBox(height: 32),
 
                 // Vision Card 3: Youth Academy
-                _VisionCard(
+                const _VisionCard(
                   title: 'YOUTH ACADEMY',
                   subtitle: 'Nurturing the Next Generation',
                   description: 'To establish Football/Futsal Academy for young generation of Iranian boys and girls.',
                   icon: Icons.school,
-                  gradient: const [Color(0xFFEA580C), Color(0xFFF59E0B)],
-                  benefits: const [
+                  gradient: [Color(0xFFEA580C), Color(0xFFF59E0B)],
+                  benefits: [
                     'Age-appropriate training programs',
                     'Technical skill development',
                     'Character building and life skills',

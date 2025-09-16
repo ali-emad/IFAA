@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 // Sample User Data Model
 class User {
@@ -721,7 +720,7 @@ class _MembershipPageState extends State<MembershipPage> with TickerProviderStat
           ..._samplePayments.map((payment) => _PaymentCard(
             payment: payment,
             isCompact: false,
-          )).toList(),
+          )),
         ],
       ),
     );

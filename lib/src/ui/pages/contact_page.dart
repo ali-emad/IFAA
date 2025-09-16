@@ -72,10 +72,10 @@ class ContactPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Address Section
-                  _ContactSection(
+                  const _ContactSection(
                     title: 'OUR ADDRESS',
                     icon: Icons.location_on,
-                    color: const Color(0xFF1E3A8A),
+                    color: Color(0xFF1E3A8A),
                     children: [
                       _ContactItem(
                         label: 'Organization',
@@ -93,10 +93,10 @@ class ContactPage extends StatelessWidget {
                   const SizedBox(height: 32),
                   
                   // Committee Section
-                  _ContactSection(
+                  const _ContactSection(
                     title: 'OUR COMMITTEE',
                     icon: Icons.people,
-                    color: const Color(0xFF059669),
+                    color: Color(0xFF059669),
                     children: [
                       _CommitteeMember(
                         name: 'Kamran KESHAVARZ',

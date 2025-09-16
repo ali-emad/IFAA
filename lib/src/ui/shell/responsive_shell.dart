@@ -12,7 +12,7 @@ class ResponsiveShell extends StatefulWidget {
 class _ResponsiveShellState extends State<ResponsiveShell>
     with TickerProviderStateMixin {
   late AnimationController _fabController;
-  
+
   // Soccer-themed navigation destinations
   static const _destinations = [
     _NavigationDestination(
@@ -77,7 +77,7 @@ class _ResponsiveShellState extends State<ResponsiveShell>
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraints) {
       final isWide = constraints.maxWidth >= 900;
-      
+
       return Scaffold(
         backgroundColor: const Color(0xFFF9FAFB),
         appBar: _buildModernAppBar(context, isWide),
@@ -100,7 +100,8 @@ class _ResponsiveShellState extends State<ResponsiveShell>
           ),
         ),
         bottomNavigationBar: isWide ? null : _buildSoccerBottomNav(context),
-        floatingActionButton: null, // Removed floating action button from membership page as it conflicts with page content
+        floatingActionButton:
+            null, // Removed floating action button from membership page as it conflicts with page content
       );
     });
   }
@@ -111,14 +112,16 @@ class _ResponsiveShellState extends State<ResponsiveShell>
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       scrolledUnderElevation: 1,
-      leading: isWide ? null : Builder(
-        builder: (context) => IconButton(
-          icon: const Icon(Icons.menu, color: Color(0xFF1F2937)),
-          onPressed: () => Scaffold.of(context).openDrawer(),
-        ),
-      ),
+      leading: isWide
+          ? null
+          : Builder(
+              builder: (context) => IconButton(
+                icon: const Icon(Icons.menu, color: Color(0xFF1F2937)),
+                onPressed: () => Scaffold.of(context).openDrawer(),
+              ),
+            ),
       title: // IFAA Logo using PNG asset
-      Image.asset(
+          Image.asset(
         'assets/images/IFAA.png',
         height: 32,
         width: 80,
@@ -154,7 +157,8 @@ class _ResponsiveShellState extends State<ResponsiveShell>
             margin: const EdgeInsets.symmetric(horizontal: 4),
             child: FilledButton.icon(
               onPressed: () => context.go('/membership'),
-              icon: const Icon(Icons.sports_soccer, size: 20), // Increased from 18 to 20
+              icon: const Icon(Icons.sports_soccer,
+                  size: 20), // Increased from 18 to 20
               label: const Text(
                 'JOIN',
                 style: TextStyle(
@@ -164,13 +168,16 @@ class _ResponsiveShellState extends State<ResponsiveShell>
               ),
               style: FilledButton.styleFrom(
                 backgroundColor: const Color(0xFF10B981),
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10), // Slightly increased padding
-                minimumSize: const Size(85, 40), // Slightly increased minimum size
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 14, vertical: 10), // Slightly increased padding
+                minimumSize:
+                    const Size(85, 40), // Slightly increased minimum size
               ),
             ),
           ),
         IconButton(
-          icon: const Icon(Icons.search, color: Color(0xFF374151), size: 22), // Increased from 20 to 22
+          icon: const Icon(Icons.search,
+              color: Color(0xFF374151), size: 22), // Increased from 20 to 22
           onPressed: () {
             // Search functionality
           },
@@ -193,7 +200,7 @@ class _ResponsiveShellState extends State<ResponsiveShell>
       final index = entry.key;
       final destination = entry.value;
       final isSelected = widget.shell.currentIndex == index;
-      
+
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 3),
         child: TextButton.icon(
@@ -201,25 +208,25 @@ class _ResponsiveShellState extends State<ResponsiveShell>
           icon: Icon(
             isSelected ? destination.selectedIcon : destination.icon,
             size: 22, // Increased back to 22 to match mobile footer
-            color: isSelected 
-                ? const Color(0xFF1E3A8A)
-                : const Color(0xFF374151),
+            color:
+                isSelected ? const Color(0xFF1E3A8A) : const Color(0xFF374151),
           ),
           label: Text(
             destination.label,
             style: TextStyle(
               fontSize: 13, // Keep at 13 for balance
               fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-              color: isSelected 
+              color: isSelected
                   ? const Color(0xFF1E3A8A)
                   : const Color(0xFF374151),
             ),
           ),
           style: TextButton.styleFrom(
-            backgroundColor: isSelected 
+            backgroundColor: isSelected
                 ? const Color(0xFF1E3A8A).withOpacity(0.08)
                 : Colors.transparent,
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8), // Slightly increased padding
+            padding: const EdgeInsets.symmetric(
+                horizontal: 10, vertical: 8), // Slightly increased padding
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
             ),
@@ -257,44 +264,51 @@ class _ResponsiveShellState extends State<ResponsiveShell>
               final index = entry.key;
               final destination = entry.value;
               final isSelected = widget.shell.currentIndex == index;
-              
-              return InkWell(
-                onTap: () => _goIndex(index),
-                borderRadius: BorderRadius.circular(12),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: isSelected 
-                        ? const Color(0xFF1E3A8A).withOpacity(0.08)
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 200),
-                        child: Icon(
-                          isSelected ? destination.selectedIcon : destination.icon,
-                          color: isSelected 
-                              ? const Color(0xFF1E3A8A)
-                              : const Color(0xFF374151),
-                          size: 22,
-                          key: ValueKey('$index-$isSelected'),
+
+              return Expanded(
+                child: InkWell(
+                  onTap: () => _goIndex(index),
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? const Color(0xFF1E3A8A).withOpacity(0.08)
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 200),
+                          child: Icon(
+                            isSelected
+                                ? destination.selectedIcon
+                                : destination.icon,
+                            color: isSelected
+                                ? const Color(0xFF1E3A8A)
+                                : const Color(0xFF374151),
+                            size: 22,
+                            key: ValueKey('$index-$isSelected'),
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        destination.label,
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                          color: isSelected 
-                              ? const Color(0xFF1E3A8A)
-                              : const Color(0xFF374151),
+                        const SizedBox(height: 4),
+                        Text(
+                          destination.label,
+                          style: TextStyle(
+                            fontSize: 10, // Reduced font size
+                            fontWeight:
+                                isSelected ? FontWeight.w700 : FontWeight.w500,
+                            color: isSelected
+                                ? const Color(0xFF1E3A8A)
+                                : const Color(0xFF374151),
+                          ),
+                          textAlign: TextAlign.center, // Center align text
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               );
@@ -328,7 +342,7 @@ class _NavigationDestination {
 
 class _SoccerDrawer extends StatelessWidget {
   final void Function(int) onTapIndex;
-  
+
   // Soccer-themed navigation destinations (copy from parent)
   static const _destinations = [
     _NavigationDestination(
@@ -372,9 +386,9 @@ class _SoccerDrawer extends StatelessWidget {
       label: 'News',
     ),
   ];
-  
+
   const _SoccerDrawer({required this.onTapIndex});
-  
+
   @override
   Widget build(BuildContext context) {
     return Drawer(
@@ -399,7 +413,8 @@ class _SoccerDrawer extends StatelessWidget {
                   child: Container(
                     decoration: const BoxDecoration(
                       image: DecorationImage(
-                        image: NetworkImage('https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800&h=600&fit=crop'),
+                        image: NetworkImage(
+                            'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800&h=600&fit=crop'),
                         fit: BoxFit.cover,
                         opacity: 0.2,
                       ),
@@ -456,7 +471,7 @@ class _SoccerDrawer extends StatelessWidget {
               ],
             ),
           ),
-          
+
           // Navigation items
           Expanded(
             child: ListView.builder(
@@ -465,7 +480,8 @@ class _SoccerDrawer extends StatelessWidget {
               itemBuilder: (context, i) {
                 final d = _destinations[i];
                 return Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
                   child: ListTile(
                     leading: Icon(
                       d.icon,
@@ -491,7 +507,7 @@ class _SoccerDrawer extends StatelessWidget {
               },
             ),
           ),
-          
+
           // Footer section
           Container(
             padding: const EdgeInsets.all(20),

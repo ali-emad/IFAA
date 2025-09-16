@@ -181,31 +181,31 @@ class HomePage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 32),
-                Row(
+                const Row(
                   children: [
                     Expanded(
                       child: _StatCard(
                         number: '500+',
                         label: 'ACTIVE MEMBERS',
-                        color: const Color(0xFF1E3A8A),
+                        color: Color(0xFF1E3A8A),
                         icon: Icons.people,
                       ),
                     ),
-                    const SizedBox(width: 16),
+                    SizedBox(width: 16),
                     Expanded(
                       child: _StatCard(
                         number: '24',
                         label: 'EVENTS YEARLY',
-                        color: const Color(0xFF059669),
+                        color: Color(0xFF059669),
                         icon: Icons.event,
                       ),
                     ),
-                    const SizedBox(width: 16),
+                    SizedBox(width: 16),
                     Expanded(
                       child: _StatCard(
                         number: '8',
                         label: 'CHAMPIONSHIP WINS',
-                        color: const Color(0xFFEA580C),
+                        color: Color(0xFFEA580C),
                         icon: Icons.emoji_events,
                       ),
                     ),
