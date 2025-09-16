@@ -79,12 +79,12 @@ class _ResponsiveShellState extends State<ResponsiveShell>
       final isWide = constraints.maxWidth >= 900;
 
       return Scaffold(
-        backgroundColor: const Color(0xFFF9FAFB),
+        backgroundColor: const Color(0xFFF1F5F9),
         appBar: _buildModernAppBar(context, isWide),
         drawer: isWide ? null : _SoccerDrawer(onTapIndex: _goIndex),
         body: Container(
           decoration: const BoxDecoration(
-            color: Color(0xFFF9FAFB),
+            color: Color(0xFFF1F5F9),
           ),
           child: AnimatedSwitcher(
             duration: const Duration(milliseconds: 300),
@@ -116,7 +116,7 @@ class _ResponsiveShellState extends State<ResponsiveShell>
           ? null
           : Builder(
               builder: (context) => IconButton(
-                icon: const Icon(Icons.menu, color: Color(0xFF1F2937)),
+                icon: const Icon(Icons.menu, color: Color(0xFF334155)),
                 onPressed: () => Scaffold.of(context).openDrawer(),
               ),
             ),
@@ -177,7 +177,7 @@ class _ResponsiveShellState extends State<ResponsiveShell>
           ),
         IconButton(
           icon: const Icon(Icons.search,
-              color: Color(0xFF374151), size: 22), // Increased from 20 to 22
+              color: Color(0xFF475569), size: 22), // Increased from 20 to 22
           onPressed: () {
             // Search functionality
           },
@@ -189,7 +189,7 @@ class _ResponsiveShellState extends State<ResponsiveShell>
         preferredSize: const Size.fromHeight(1),
         child: Container(
           height: 1,
-          color: const Color(0xFFE5E7EB),
+          color: const Color(0xFFE2E8F0),
         ),
       ),
     );
@@ -209,7 +209,7 @@ class _ResponsiveShellState extends State<ResponsiveShell>
             isSelected ? destination.selectedIcon : destination.icon,
             size: 22, // Increased back to 22 to match mobile footer
             color:
-                isSelected ? const Color(0xFF1E3A8A) : const Color(0xFF374151),
+                isSelected ? const Color(0xFF3B82F6) : const Color(0xFF475569),
           ),
           label: Text(
             destination.label,
@@ -217,8 +217,8 @@ class _ResponsiveShellState extends State<ResponsiveShell>
               fontSize: 13, // Keep at 13 for balance
               fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
               color: isSelected
-                  ? const Color(0xFF1E3A8A)
-                  : const Color(0xFF374151),
+                  ? const Color(0xFF3B82F6)
+                  : const Color(0xFF475569),
             ),
           ),
           style: TextButton.styleFrom(
@@ -288,8 +288,8 @@ class _ResponsiveShellState extends State<ResponsiveShell>
                                 ? destination.selectedIcon
                                 : destination.icon,
                             color: isSelected
-                                ? const Color(0xFF1E3A8A)
-                                : const Color(0xFF374151),
+                                ? const Color(0xFF3B82F6)
+                                : const Color(0xFF475569),
                             size: 22,
                             key: ValueKey('$index-$isSelected'),
                           ),
@@ -302,8 +302,8 @@ class _ResponsiveShellState extends State<ResponsiveShell>
                             fontWeight:
                                 isSelected ? FontWeight.w700 : FontWeight.w500,
                             color: isSelected
-                                ? const Color(0xFF1E3A8A)
-                                : const Color(0xFF374151),
+                                ? const Color(0xFF3B82F6)
+                                : const Color(0xFF475569),
                           ),
                           textAlign: TextAlign.center, // Center align text
                         ),
@@ -403,7 +403,7 @@ class _SoccerDrawer extends StatelessWidget {
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [Color(0xFF1E3A8A), Color(0xFF3B82F6)],
+                colors: [Color(0xFF3B82F6), Color(0xFF10B981)],
               ),
             ),
             child: Stack(

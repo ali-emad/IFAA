@@ -9,11 +9,11 @@ class SoccerThemeColors {
   static const Color accentRed = Color(0xFFDC2626);       // Alert red
   
   // Neutral colors
-  static const Color darkCharcoal = Color(0xFF1F2937);    // Dark backgrounds
-  static const Color lightGray = Color(0xFFF9FAFB);       // Light backgrounds
-  static const Color mediumGray = Color(0xFF6B7280);      // Secondary text (light)
-  static const Color darkGray = Color(0xFF374151);        // Secondary text (darker)
-  static const Color borderGray = Color(0xFFE5E7EB);      // Borders
+  static const Color darkCharcoal = Color(0xFF334155);    // Dark backgrounds (lighter)
+  static const Color lightGray = Color(0xFFF1F5F9);       // Light backgrounds
+  static const Color mediumGray = Color(0xFF64748B);      // Secondary text (light)
+  static const Color darkGray = Color(0xFF475569);        // Secondary text (darker)
+  static const Color borderGray = Color(0xFFE2E8F0);      // Borders
   
   // Gradient combinations
   static const List<Color> heroGradient = [

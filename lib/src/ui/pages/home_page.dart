@@ -112,7 +112,7 @@ class HomePage extends StatelessWidget {
                           ),
                         ),
 
-                        Spacer(),
+                        const Spacer(),
 
                         // Subtitle
                         Container(
@@ -127,7 +127,7 @@ class HomePage extends StatelessWidget {
                           ),
                         ),
 
-                        Spacer(),
+                        const Spacer(),
 
                         // CTA Buttons
                         Wrap(
@@ -184,7 +184,7 @@ class HomePage extends StatelessWidget {
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                         fontWeight: FontWeight.w800,
                         letterSpacing: 1,
-                        color: const Color(0xFF1F2937),
+                        color: const Color(0xFF334155),
                       ),
                 ),
                 const SizedBox(height: 32),
@@ -235,14 +235,14 @@ class HomePage extends StatelessWidget {
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                         fontWeight: FontWeight.w800,
                         letterSpacing: 1,
-                        color: const Color(0xFF1F2937),
+                        color: const Color(0xFF334155),
                       ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Discover our programs and services designed for the Iranian football community',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: const Color(0xFF374151),
+                        color: const Color(0xFF475569),
                       ),
                 ),
                 const SizedBox(height: 32),
@@ -449,7 +449,7 @@ class _StatCard extends StatelessWidget {
           style: Theme.of(context).textTheme.labelMedium?.copyWith(
                 letterSpacing: 1,
                 color: const Color(
-                    0xFF1F2937), // Explicitly set dark color for better readability
+                    0xFF334155), // Updated to match new theme color
               ),
           textAlign: TextAlign.center,
         ),
@@ -545,7 +545,7 @@ class _FeatureCard extends StatelessWidget {
                     description,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: const Color(
-                              0xFF1F2937), // Explicitly set dark color for better readability
+                              0xFF334155), // Updated to match new theme color
                         ),
                   ),
                 ),

@@ -152,7 +152,7 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF1E3A8A), Color(0xFF059669)],
+          colors: [Color(0xFF3B82F6), Color(0xFF10B981)],
         ),
       ),
       child: SafeArea(
@@ -177,7 +177,7 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
                         height: 80,
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
-                            colors: [Color(0xFF1E3A8A), Color(0xFF059669)],
+                            colors: [Color(0xFF3B82F6), Color(0xFF10B981)],
                           ),
                           borderRadius: BorderRadius.circular(20),
                         ),
@@ -197,7 +197,7 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
                             .headlineMedium
                             ?.copyWith(
                               fontWeight: FontWeight.w800,
-                              color: const Color(0xFF1F2937),
+                              color: Colors.white,
                             ),
                       ),
 
@@ -206,7 +206,7 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
                       Text(
                         'Join Australia\'s premier Iranian football community',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: const Color(0xFF374151),
+                              color: Colors.white.withOpacity(0.9),
                             ),
                         textAlign: TextAlign.center,
                       ),
@@ -239,6 +239,7 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
                           ),
                           style: FilledButton.styleFrom(
                             backgroundColor: const Color(0xFF1E3A8A),
+                            foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 16),
                           ),
                         ),
@@ -246,34 +247,13 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
 
                       const SizedBox(height: 16),
 
-                      // Demo Login Button
-                      SizedBox(
-                        width: double.infinity,
-                        child: OutlinedButton.icon(
-                          onPressed: _isLoading ? null : _demoLogin,
-                          icon: const Icon(Icons.preview),
-                          label: const Text(
-                            'Demo Login (Sample Data)',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: const Color(0xFF059669),
-                            side: const BorderSide(
-                                color: Color(0xFF059669), width: 2),
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                          ),
-                        ),
-                      ),
-
                       const SizedBox(height: 24),
 
                       // Terms and Privacy
                       Text(
                         'By continuing, you agree to our Terms of Service and Privacy Policy',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: const Color(0xFF374151),
+                              color: Colors.white.withOpacity(0.8),
                             ),
                         textAlign: TextAlign.center,
                       ),
@@ -322,33 +302,7 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
     }
   }
 
-  void _demoLogin() async {
-    setState(() => _isLoading = true);
 
-    await Future.delayed(const Duration(seconds: 1));
-
-    _currentUser = User(
-      id: 'demo_123',
-      name: 'Demo User',
-      email: 'demo@ifaa.org.au',
-      photoUrl: null,
-      joinDate: DateTime.now().subtract(const Duration(days: 180)),
-      membershipType: MembershipType.basic,
-      isActive: true,
-      profile: {
-        'phone': '+61 412 345 678',
-        'position': 'Forward',
-        'emergencyContact': 'Jane Doe',
-        'dateOfBirth': '1995-06-15',
-        'experience': '3 years',
-      },
-    );
-
-    setState(() {
-      _isLoading = false;
-      _isLoggedIn = true;
-    });
-  }
 
   void _logout() async {
     await _authService.signOutGoogle();
@@ -373,7 +327,7 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
   // Member Dashboard
   Widget _buildMemberDashboard() {
     return Container(
-      color: const Color(0xFFF9FAFB),
+      color: const Color(0xFFF1F5F9),
       child: Column(
         children: [
           // Header with user info
@@ -383,7 +337,7 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [Color(0xFF1E3A8A), Color(0xFF3B82F6)],
+                colors: [Color(0xFF3B82F6), Color(0xFF10B981)],
               ),
             ),
             child: Row(
