@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/auth_provider.dart';
+import '../../services/auth_service.dart';
 
 // Sample User Data Model
 class User {
@@ -10,7 +13,7 @@ class User {
   final MembershipType membershipType;
   final bool isActive;
   final Map<String, dynamic> profile;
-  
+
   User({
     required this.id,
     required this.name,
@@ -37,7 +40,7 @@ class Payment {
   final String description;
   final PaymentStatus status;
   final String method;
-  
+
   Payment({
     required this.id,
     required this.date,
@@ -55,32 +58,56 @@ enum PaymentStatus {
   refunded,
 }
 
-class MembershipPage extends StatefulWidget {
+class MembershipPage extends ConsumerStatefulWidget {
   const MembershipPage({super.key});
-  
+
   @override
-  State<MembershipPage> createState() => _MembershipPageState();
+  ConsumerState<MembershipPage> createState() => _MembershipPageState();
 }
 
-class _MembershipPageState extends State<MembershipPage> with TickerProviderStateMixin {
+class _MembershipPageState extends ConsumerState<MembershipPage>
+    with TickerProviderStateMixin {
   bool _isLoggedIn = false;
   bool _isLoading = false;
   User? _currentUser;
   int _selectedTab = 0;
   late TabController _tabController;
-  
+
+  late final AuthService _authService;
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
+    _authService = ref.read(authServiceProvider);
+    _checkCurrentUser();
   }
-  
+
   @override
   void dispose() {
     _tabController.dispose();
     super.dispose();
   }
-  
+
+  void _checkCurrentUser() async {
+    final user = await _authService.getCurrentUser();
+    if (user != null) {
+      setState(() {
+        _isLoggedIn = true;
+        _currentUser = User(
+          id: user.id,
+          name: user.displayName ?? 'Google User',
+          email: user.email,
+          photoUrl: user.photoUrl,
+          joinDate: DateTime.now(), // Placeholder, ideally fetched from backend
+          membershipType: MembershipType.basic, // Placeholder
+          isActive: true, // Placeholder
+          profile: {}, // Placeholder
+        );
+      });
+    }
+  }
+
   // Sample data - in production this would come from a database
   final List<Payment> _samplePayments = [
     Payment(
@@ -108,16 +135,16 @@ class _MembershipPageState extends State<MembershipPage> with TickerProviderStat
       method: 'Bank Transfer',
     ),
   ];
-  
+
   @override
   Widget build(BuildContext context) {
     if (!_isLoggedIn) {
       return _buildAuthScreen();
     }
-    
+
     return _buildMemberDashboard();
   }
-  
+
   // Authentication Screen
   Widget _buildAuthScreen() {
     return Container(
@@ -160,35 +187,38 @@ class _MembershipPageState extends State<MembershipPage> with TickerProviderStat
                           size: 40,
                         ),
                       ),
-                      
+
                       const SizedBox(height: 24),
-                      
+
                       Text(
                         'Welcome to IFAA',
-                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.w800,
-                          color: const Color(0xFF1F2937),
-                        ),
+                        style: Theme.of(context)
+                            .textTheme
+                            .headlineMedium
+                            ?.copyWith(
+                              fontWeight: FontWeight.w800,
+                              color: const Color(0xFF1F2937),
+                            ),
                       ),
-                      
+
                       const SizedBox(height: 8),
-                      
+
                       Text(
                         'Join Australia\'s premier Iranian football community',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: const Color(0xFF374151),
-                        ),
+                              color: const Color(0xFF374151),
+                            ),
                         textAlign: TextAlign.center,
                       ),
-                      
+
                       const SizedBox(height: 32),
-                      
+
                       // Google Sign In Button
                       SizedBox(
                         width: double.infinity,
                         child: FilledButton.icon(
                           onPressed: _isLoading ? null : _signInWithGoogle,
-                          icon: _isLoading 
+                          icon: _isLoading
                               ? const SizedBox(
                                   width: 20,
                                   height: 20,
@@ -199,7 +229,9 @@ class _MembershipPageState extends State<MembershipPage> with TickerProviderStat
                                 )
                               : const Icon(Icons.login, size: 20),
                           label: Text(
-                            _isLoading ? 'Signing in...' : 'Continue with Google',
+                            _isLoading
+                                ? 'Signing in...'
+                                : 'Continue with Google',
                             style: const TextStyle(
                               fontWeight: FontWeight.w600,
                               fontSize: 16,
@@ -211,9 +243,9 @@ class _MembershipPageState extends State<MembershipPage> with TickerProviderStat
                           ),
                         ),
                       ),
-                      
+
                       const SizedBox(height: 16),
-                      
+
                       // Demo Login Button
                       SizedBox(
                         width: double.infinity,
@@ -228,20 +260,21 @@ class _MembershipPageState extends State<MembershipPage> with TickerProviderStat
                           ),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: const Color(0xFF059669),
-                            side: const BorderSide(color: Color(0xFF059669), width: 2),
+                            side: const BorderSide(
+                                color: Color(0xFF059669), width: 2),
                             padding: const EdgeInsets.symmetric(vertical: 16),
                           ),
                         ),
                       ),
-                      
+
                       const SizedBox(height: 24),
-                      
+
                       // Terms and Privacy
                       Text(
                         'By continuing, you agree to our Terms of Service and Privacy Policy',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: const Color(0xFF374151),
-                        ),
+                              color: const Color(0xFF374151),
+                            ),
                         textAlign: TextAlign.center,
                       ),
                     ],
@@ -254,43 +287,46 @@ class _MembershipPageState extends State<MembershipPage> with TickerProviderStat
       ),
     );
   }
-  
+
   // Authentication Methods
   void _signInWithGoogle() async {
     setState(() => _isLoading = true);
-    
-    // Simulate Google Sign-In
-    await Future.delayed(const Duration(seconds: 2));
-    
-    // In production, implement actual Google Sign-In
-    _currentUser = User(
-      id: 'google_123',
-      name: 'Ali Emadi',
-      email: 'ali.emadi@example.com',
-      photoUrl: 'https://via.placeholder.com/150',
-      joinDate: DateTime.now().subtract(const Duration(days: 365)),
-      membershipType: MembershipType.premium,
-      isActive: true,
-      profile: {
-        'phone': '+61 410 190 051',
-        'position': 'Midfielder',
-        'emergencyContact': 'Emergency Contact',
-        'dateOfBirth': '1990-01-01',
-        'experience': '5 years',
-      },
-    );
-    
-    setState(() {
-      _isLoading = false;
-      _isLoggedIn = true;
-    });
+    try {
+      await _authService.signInWithGoogle();
+      final user = await _authService.getCurrentUser();
+      if (user != null) {
+        setState(() {
+          _isLoggedIn = true;
+          _currentUser = User(
+            id: user.id,
+            name: user.displayName ?? 'Google User',
+            email: user.email,
+            photoUrl: user.photoUrl,
+            joinDate:
+                DateTime.now(), // Placeholder, ideally fetched from backend
+            membershipType: MembershipType.basic, // Placeholder
+            isActive: true, // Placeholder
+            profile: {}, // Placeholder
+          );
+        });
+      } else {
+        setState(() => _isLoggedIn = false);
+      }
+    } catch (e) {
+      print('Error during Google Sign-In: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to sign in with Google: $e')),
+      );
+    } finally {
+      setState(() => _isLoading = false);
+    }
   }
-  
+
   void _demoLogin() async {
     setState(() => _isLoading = true);
-    
+
     await Future.delayed(const Duration(seconds: 1));
-    
+
     _currentUser = User(
       id: 'demo_123',
       name: 'Demo User',
@@ -307,21 +343,22 @@ class _MembershipPageState extends State<MembershipPage> with TickerProviderStat
         'experience': '3 years',
       },
     );
-    
+
     setState(() {
       _isLoading = false;
       _isLoggedIn = true;
     });
   }
-  
-  void _logout() {
+
+  void _logout() async {
+    await _authService.signOutGoogle();
     setState(() {
       _isLoggedIn = false;
       _currentUser = null;
       _selectedTab = 0;
     });
   }
-  
+
   String _getMembershipLabel(MembershipType type) {
     switch (type) {
       case MembershipType.basic:
@@ -332,7 +369,7 @@ class _MembershipPageState extends State<MembershipPage> with TickerProviderStat
         return 'ELITE';
     }
   }
-  
+
   // Member Dashboard
   Widget _buildMemberDashboard() {
     return Container(
@@ -358,7 +395,8 @@ class _MembershipPageState extends State<MembershipPage> with TickerProviderStat
                       ? NetworkImage(_currentUser!.photoUrl!)
                       : null,
                   child: _currentUser?.photoUrl == null
-                      ? const Icon(Icons.person, size: 30, color: Color(0xFF1E3A8A))
+                      ? const Icon(Icons.person,
+                          size: 30, color: Color(0xFF1E3A8A))
                       : null,
                 ),
                 const SizedBox(width: 16),
@@ -369,15 +407,16 @@ class _MembershipPageState extends State<MembershipPage> with TickerProviderStat
                       Text(
                         'Welcome back,',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.white.withOpacity(0.8),
-                        ),
+                              color: Colors.white.withOpacity(0.8),
+                            ),
                       ),
                       Text(
                         _currentUser?.name ?? 'Member',
-                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w800,
-                        ),
+                        style:
+                            Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w800,
+                                ),
                       ),
                       Row(
                         children: [
@@ -391,7 +430,9 @@ class _MembershipPageState extends State<MembershipPage> with TickerProviderStat
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
-                              _getMembershipLabel(_currentUser?.membershipType ?? MembershipType.basic),
+                              _getMembershipLabel(
+                                  _currentUser?.membershipType ??
+                                      MembershipType.basic),
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 12,
@@ -432,7 +473,7 @@ class _MembershipPageState extends State<MembershipPage> with TickerProviderStat
               ],
             ),
           ),
-          
+
           // Tab Navigation
           Container(
             color: Colors.white,
@@ -450,7 +491,7 @@ class _MembershipPageState extends State<MembershipPage> with TickerProviderStat
               indicatorColor: const Color(0xFF1E3A8A),
             ),
           ),
-          
+
           // Tab Content
           Expanded(
             child: TabBarView(
@@ -497,38 +538,41 @@ class _MembershipPageState extends State<MembershipPage> with TickerProviderStat
               ),
             ],
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // Recent Activity
           Text(
             'RECENT ACTIVITY',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.5,
-            ),
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.5,
+                ),
           ),
-          
+
           const SizedBox(height: 16),
-          
-          ...(_samplePayments.take(3).map((payment) => _PaymentCard(
-            payment: payment,
-            isCompact: true,
-          )).toList()),
-          
+
+          ...(_samplePayments
+              .take(3)
+              .map((payment) => _PaymentCard(
+                    payment: payment,
+                    isCompact: true,
+                  ))
+              .toList()),
+
           const SizedBox(height: 24),
-          
+
           // Quick Actions
           Text(
             'QUICK ACTIONS',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.5,
-            ),
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.5,
+                ),
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           Row(
             children: [
               Expanded(
@@ -538,13 +582,15 @@ class _MembershipPageState extends State<MembershipPage> with TickerProviderStat
                   label: const Text(
                     'Renew Membership',
                     style: TextStyle(
-                      color: Colors.white, // Explicitly set white text for better contrast
+                      color: Colors
+                          .white, // Explicitly set white text for better contrast
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                   style: FilledButton.styleFrom(
                     backgroundColor: const Color(0xFF1E3A8A),
-                    foregroundColor: Colors.white, // Ensure white text and icons
+                    foregroundColor:
+                        Colors.white, // Ensure white text and icons
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
                 ),
@@ -585,7 +631,8 @@ class _MembershipPageState extends State<MembershipPage> with TickerProviderStat
                     ? NetworkImage(_currentUser!.photoUrl!)
                     : null,
                 child: _currentUser?.photoUrl == null
-                    ? const Icon(Icons.person, size: 60, color: Color(0xFF1E3A8A))
+                    ? const Icon(Icons.person,
+                        size: 60, color: Color(0xFF1E3A8A))
                     : null,
               ),
               Positioned(
@@ -605,9 +652,9 @@ class _MembershipPageState extends State<MembershipPage> with TickerProviderStat
               ),
             ],
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // Profile Form
           _ProfileField(
             label: 'Full Name',
@@ -644,9 +691,9 @@ class _MembershipPageState extends State<MembershipPage> with TickerProviderStat
             value: _currentUser?.profile['emergencyContact'] ?? '',
             icon: Icons.emergency,
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           SizedBox(
             width: double.infinity,
             child: FilledButton.icon(
@@ -675,13 +722,13 @@ class _MembershipPageState extends State<MembershipPage> with TickerProviderStat
           Text(
             'MAKE A PAYMENT',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.5,
-            ),
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.5,
+                ),
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           Row(
             children: [
               Expanded(
@@ -703,24 +750,24 @@ class _MembershipPageState extends State<MembershipPage> with TickerProviderStat
               ),
             ],
           ),
-          
+
           const SizedBox(height: 32),
-          
+
           // Payment History
           Text(
             'PAYMENT HISTORY',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.5,
-            ),
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.5,
+                ),
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           ..._samplePayments.map((payment) => _PaymentCard(
-            payment: payment,
-            isCompact: false,
-          )),
+                payment: payment,
+                isCompact: false,
+              )),
         ],
       ),
     );
@@ -736,13 +783,13 @@ class _MembershipPageState extends State<MembershipPage> with TickerProviderStat
           Text(
             'MEMBERSHIP HISTORY',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.5,
-            ),
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.5,
+                ),
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Membership Timeline
           _TimelineItem(
             date: DateTime.now(),
@@ -782,7 +829,7 @@ class _MembershipPageState extends State<MembershipPage> with TickerProviderStat
     if (date == null) return 'Unknown';
     final now = DateTime.now();
     final difference = now.difference(date);
-    
+
     if (difference.inDays > 365) {
       return '${(difference.inDays / 365).floor()} years';
     } else if (difference.inDays > 30) {
@@ -814,14 +861,15 @@ class _MembershipPageState extends State<MembershipPage> with TickerProviderStat
             status: PaymentStatus.completed,
             method: 'Credit Card',
           );
-          
+
           setState(() {
             _samplePayments.insert(0, newPayment);
           });
-          
+
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Payment of \$${amount.toStringAsFixed(2)} successful!'),
+              content:
+                  Text('Payment of \$${amount.toStringAsFixed(2)} successful!'),
               backgroundColor: const Color(0xFF10B981),
             ),
           );
@@ -833,7 +881,8 @@ class _MembershipPageState extends State<MembershipPage> with TickerProviderStat
   void _updateProfilePicture() {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Profile picture update functionality would be implemented here'),
+        content: Text(
+            'Profile picture update functionality would be implemented here'),
       ),
     );
   }
@@ -854,14 +903,14 @@ class _StatCard extends StatelessWidget {
   final String title;
   final String value;
   final Color color;
-  
+
   const _StatCard({
     required this.icon,
     required this.title,
     required this.value,
     required this.color,
   });
-  
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -915,12 +964,12 @@ class _StatCard extends StatelessWidget {
 class _PaymentCard extends StatelessWidget {
   final Payment payment;
   final bool isCompact;
-  
+
   const _PaymentCard({
     required this.payment,
     required this.isCompact,
   });
-  
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -1015,7 +1064,7 @@ class _PaymentCard extends StatelessWidget {
       ),
     );
   }
-  
+
   Color _getStatusColor() {
     switch (payment.status) {
       case PaymentStatus.completed:
@@ -1028,7 +1077,7 @@ class _PaymentCard extends StatelessWidget {
         return const Color(0xFF6B7280);
     }
   }
-  
+
   IconData _getStatusIcon() {
     switch (payment.status) {
       case PaymentStatus.completed:
@@ -1041,7 +1090,7 @@ class _PaymentCard extends StatelessWidget {
         return Icons.undo;
     }
   }
-  
+
   String _getStatusText() {
     switch (payment.status) {
       case PaymentStatus.completed:
@@ -1054,7 +1103,7 @@ class _PaymentCard extends StatelessWidget {
         return 'REFUNDED';
     }
   }
-  
+
   String _formatDate(DateTime date) {
     return '${date.day}/${date.month}/${date.year}';
   }
@@ -1064,13 +1113,13 @@ class _ProfileField extends StatelessWidget {
   final String label;
   final String value;
   final IconData icon;
-  
+
   const _ProfileField({
     required this.label,
     required this.value,
     required this.icon,
   });
-  
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -1132,14 +1181,14 @@ class _PaymentOptionCard extends StatelessWidget {
   final double amount;
   final String description;
   final VoidCallback onTap;
-  
+
   const _PaymentOptionCard({
     required this.title,
     required this.amount,
     required this.description,
     required this.onTap,
   });
-  
+
   @override
   Widget build(BuildContext context) {
     return Material(
@@ -1209,7 +1258,7 @@ class _TimelineItem extends StatelessWidget {
   final String description;
   final IconData icon;
   final Color color;
-  
+
   const _TimelineItem({
     required this.date,
     required this.title,
@@ -1217,7 +1266,7 @@ class _TimelineItem extends StatelessWidget {
     required this.icon,
     required this.color,
   });
-  
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -1272,16 +1321,16 @@ class _TimelineItem extends StatelessWidget {
 class _PaymentDialog extends StatelessWidget {
   final String description;
   final Function(double) onConfirm;
-  
+
   const _PaymentDialog({
     required this.description,
     required this.onConfirm,
   });
-  
+
   @override
   Widget build(BuildContext context) {
     double amount = 120.0;
-    
+
     return AlertDialog(
       title: const Text('Make Payment'),
       content: Column(
