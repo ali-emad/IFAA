@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import '../../providers/auth_provider.dart';
 import '../../services/auth_service.dart';
 
@@ -90,16 +91,16 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
   }
 
   void _checkCurrentUser() async {
-    final user = await _authService.getCurrentUser();
+    final firebase_auth.User? user = await _authService.getCurrentUser();
     if (user != null) {
       setState(() {
         _isLoggedIn = true;
         _currentUser = User(
-          id: user.id,
+          id: user.uid,
           name: user.displayName ?? 'Google User',
-          email: user.email,
-          photoUrl: user.photoUrl,
-          joinDate: DateTime.now(), // Placeholder, ideally fetched from backend
+          email: user.email ?? '',
+          photoUrl: user.photoURL,
+          joinDate: user.metadata.creationTime ?? DateTime.now(), // Placeholder, ideally fetched from backend
           membershipType: MembershipType.basic, // Placeholder
           isActive: true, // Placeholder
           profile: {}, // Placeholder
@@ -272,21 +273,19 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
   void _signInWithGoogle() async {
     setState(() => _isLoading = true);
     try {
-      await _authService.signInWithGoogle();
-      final user = await _authService.getCurrentUser();
+      final firebase_auth.User? user = await _authService.signInWithGoogle();
       if (user != null) {
         setState(() {
           _isLoggedIn = true;
           _currentUser = User(
-            id: user.id,
+            id: user.uid,
             name: user.displayName ?? 'Google User',
-            email: user.email,
-            photoUrl: user.photoUrl,
-            joinDate:
-                DateTime.now(), // Placeholder, ideally fetched from backend
-            membershipType: MembershipType.basic, // Placeholder
-            isActive: true, // Placeholder
-            profile: {}, // Placeholder
+            email: user.email ?? '',
+            photoUrl: user.photoURL,
+            joinDate: user.metadata.creationTime ?? DateTime.now(),
+            membershipType: MembershipType.basic,
+            isActive: true,
+            profile: {},
           );
         });
       } else {
@@ -301,8 +300,6 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
       setState(() => _isLoading = false);
     }
   }
-
-
 
   void _logout() async {
     await _authService.signOutGoogle();

@@ -1,31 +1,26 @@
-import 'package:google_sign_in/google_sign_in.dart';
+import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
+import 'firebase_service.dart';
 
 class AuthService {
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  final FirebaseService _firebaseService = FirebaseService();
 
-  Future<void> signInWithGoogle() async {
-    try {
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) {
-        // The user canceled the sign-in
-        return;
-      }
-      // Process successful sign-in
-      print('Signed in with Google: ${googleUser.displayName}');
-    } catch (error) {
-      print('Error signing in with Google: $error');
-    }
+  Future<void> initialize() async {
+    // Firebase is already initialized in main.dart
+    // This method is kept for backward compatibility
+  }
+
+  Future<firebase_auth.User?> signInWithGoogle() async {
+    final userCredential = await _firebaseService.signInWithGoogle();
+    return userCredential?.user;
   }
 
   Future<void> signOutGoogle() async {
-    await _googleSignIn.signOut();
-    print('Signed out of Google');
+    await _firebaseService.signOut();
   }
 
-  Future<GoogleSignInAccount?> getCurrentUser() async {
-    return _googleSignIn.currentUser;
+  firebase_auth.User? getCurrentUser() {
+    return _firebaseService.getCurrentUser();
   }
 
-  Stream<GoogleSignInAccount?> get onAuthStateChanged =>
-      _googleSignIn.onCurrentUserChanged;
+  Stream<firebase_auth.User?> get onAuthStateChanged => _firebaseService.authStateChanges;
 }

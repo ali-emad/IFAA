@@ -204,12 +204,9 @@ self.addEventListener('activate', (event) => {
         cacheNames.map((cacheName) => {
           // Delete old caches that don't match current cache names
           if (
-            cacheName !== CACHE_NAME &&
             cacheName !== API_CACHE &&
             cacheName !== 'ifaa-static-cache-v1' &&
-            cacheName !== CRITICAL_ASSETS_CACHE &&
-            cacheName !== MANIFEST &&
-            cacheName !== TEMP
+            cacheName !== CRITICAL_ASSETS_CACHE
           ) {
             return caches.delete(cacheName);
           }
