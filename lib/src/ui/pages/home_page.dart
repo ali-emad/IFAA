@@ -36,7 +36,7 @@ class HomePage extends StatelessWidget {
                     ),
                   ),
                 ),
-                
+
                 // Geometric overlay pattern
                 Positioned.fill(
                   child: Container(
@@ -52,7 +52,7 @@ class HomePage extends StatelessWidget {
                     ),
                   ),
                 ),
-                
+
                 // Hero Content
                 Positioned.fill(
                   child: Padding(
@@ -85,17 +85,23 @@ class HomePage extends StatelessWidget {
                                     children: [
                                       Text(
                                         'IFAA',
-                                        style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.w900,
-                                        ),
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .displayMedium
+                                            ?.copyWith(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.w900,
+                                            ),
                                       ),
                                       Text(
                                         'IRANIAN FOOTBALL ASSOCIATION AUSTRALIA',
-                                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                          color: const Color(0xFF10B981),
-                                          fontWeight: FontWeight.w600,
-                                        ),
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .titleSmall
+                                            ?.copyWith(
+                                              color: const Color(0xFF10B981),
+                                              fontWeight: FontWeight.w600,
+                                            ),
                                         textAlign: TextAlign.center,
                                       ),
                                     ],
@@ -105,23 +111,24 @@ class HomePage extends StatelessWidget {
                             ),
                           ),
                         ),
-                        
-                        const SizedBox(height: 32),
-                        
+
+                        const Spacer(),
+
                         // Subtitle
                         Container(
                           constraints: const BoxConstraints(maxWidth: 500),
                           child: Text(
                             'Building champions, fostering community, and celebrating the beautiful game across Australia. Join our growing family of football enthusiasts.',
-                            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                              color: Colors.white.withOpacity(0.9),
-                              height: 1.6,
-                            ),
+                            style:
+                                Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                      color: Colors.white.withOpacity(0.9),
+                                      height: 1.6,
+                                    ),
                           ),
                         ),
-                        
-                        const SizedBox(height: 32),
-                        
+
+                        const Spacer(),
+
                         // CTA Buttons
                         Wrap(
                           spacing: 16,
@@ -149,7 +156,7 @@ class HomePage extends StatelessWidget {
             ),
           ),
         ),
-        
+
         // Team Statistics Section
         SliverToBoxAdapter(
           child: Container(
@@ -175,37 +182,37 @@ class HomePage extends StatelessWidget {
                 Text(
                   'COMMUNITY IMPACT',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 1,
-                    color: const Color(0xFF1F2937),
-                  ),
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1,
+                        color: const Color(0xFF334155),
+                      ),
                 ),
                 const SizedBox(height: 32),
-                Row(
+                const Row(
                   children: [
                     Expanded(
                       child: _StatCard(
                         number: '500+',
                         label: 'ACTIVE MEMBERS',
-                        color: const Color(0xFF1E3A8A),
+                        color: Color(0xFF1E3A8A),
                         icon: Icons.people,
                       ),
                     ),
-                    const SizedBox(width: 16),
+                    SizedBox(width: 16),
                     Expanded(
                       child: _StatCard(
                         number: '24',
                         label: 'EVENTS YEARLY',
-                        color: const Color(0xFF059669),
+                        color: Color(0xFF059669),
                         icon: Icons.event,
                       ),
                     ),
-                    const SizedBox(width: 16),
+                    SizedBox(width: 16),
                     Expanded(
                       child: _StatCard(
                         number: '8',
                         label: 'CHAMPIONSHIP WINS',
-                        color: const Color(0xFFEA580C),
+                        color: Color(0xFFEA580C),
                         icon: Icons.emoji_events,
                       ),
                     ),
@@ -215,7 +222,7 @@ class HomePage extends StatelessWidget {
             ),
           ),
         ),
-        
+
         // Services/Features Section
         SliverToBoxAdapter(
           child: Padding(
@@ -226,24 +233,24 @@ class HomePage extends StatelessWidget {
                 Text(
                   'WHAT WE OFFER',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 1,
-                    color: const Color(0xFF1F2937),
-                  ),
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1,
+                        color: const Color(0xFF334155),
+                      ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Discover our programs and services designed for the Iranian football community',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: const Color(0xFF374151),
-                  ),
+                        color: const Color(0xFF475569),
+                      ),
                 ),
                 const SizedBox(height: 32),
               ],
             ),
           ),
         ),
-        
+
         // Feature Cards Grid
         SliverPadding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -257,28 +264,32 @@ class HomePage extends StatelessWidget {
             delegate: SliverChildListDelegate([
               _FeatureCard(
                 title: 'YOUTH ACADEMY',
-                description: 'Professional training programs for young talented players with certified coaches.',
+                description:
+                    'Professional training programs for young talented players with certified coaches.',
                 icon: Icons.school,
                 gradient: const [Color(0xFF1E3A8A), Color(0xFF3B82F6)],
                 onTap: () => context.go('/vision'),
               ),
               _FeatureCard(
                 title: 'TOURNAMENTS',
-                description: 'Regular competitions and friendly matches within the Australian football community.',
+                description:
+                    'Regular competitions and friendly matches within the Australian football community.',
                 icon: Icons.emoji_events,
                 gradient: const [Color(0xFF059669), Color(0xFF10B981)],
                 onTap: () => context.go('/events'),
               ),
               _FeatureCard(
                 title: 'NEWS & UPDATES',
-                description: 'Stay connected with the latest news, match results, and community announcements.',
+                description:
+                    'Stay connected with the latest news, match results, and community announcements.',
                 icon: Icons.newspaper,
                 gradient: const [Color(0xFFEA580C), Color(0xFFF59E0B)],
                 onTap: () => context.go('/news'),
               ),
               _FeatureCard(
                 title: 'PHOTO GALLERY',
-                description: 'Relive the best moments from our matches, training sessions, and events.',
+                description:
+                    'Relive the best moments from our matches, training sessions, and events.',
                 icon: Icons.photo_camera,
                 gradient: const [Color(0xFF7C3AED), Color(0xFFA855F7)],
                 onTap: () => context.go('/gallery'),
@@ -286,7 +297,7 @@ class HomePage extends StatelessWidget {
             ]),
           ),
         ),
-        
+
         // Call to Action Section
         SliverToBoxAdapter(
           child: Container(
@@ -311,17 +322,17 @@ class HomePage extends StatelessWidget {
                 Text(
                   'READY TO JOIN THE TEAM?',
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                  ),
+                        color: Colors.white,
+                        fontWeight: FontWeight.w900,
+                      ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 12),
                 Text(
                   'Become part of Australia\'s premier Iranian football community',
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: Colors.white.withOpacity(0.9),
-                  ),
+                        color: Colors.white.withOpacity(0.9),
+                      ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 24),
@@ -336,14 +347,14 @@ class HomePage extends StatelessWidget {
             ),
           ),
         ),
-        
+
         const SliverToBoxAdapter(
           child: SizedBox(height: 40),
         ),
       ],
     );
   }
-  
+
   int _getCrossAxisCount(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     if (width > 1200) return 4;
@@ -358,7 +369,7 @@ class _SoccerButton extends StatelessWidget {
   final IconData icon;
   final bool isPrimary;
   final bool isLight;
-  
+
   const _SoccerButton({
     required this.onPressed,
     required this.label,
@@ -366,7 +377,7 @@ class _SoccerButton extends StatelessWidget {
     required this.isPrimary,
     this.isLight = false,
   });
-  
+
   @override
   Widget build(BuildContext context) {
     if (isPrimary) {
@@ -400,14 +411,14 @@ class _StatCard extends StatelessWidget {
   final String label;
   final Color color;
   final IconData icon;
-  
+
   const _StatCard({
     required this.number,
     required this.label,
     required this.color,
     required this.icon,
   });
-  
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -428,17 +439,18 @@ class _StatCard extends StatelessWidget {
         Text(
           number,
           style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-            fontWeight: FontWeight.w900,
-            color: color,
-          ),
+                fontWeight: FontWeight.w900,
+                color: color,
+              ),
         ),
         const SizedBox(height: 4),
         Text(
           label,
           style: Theme.of(context).textTheme.labelMedium?.copyWith(
-            letterSpacing: 1,
-            color: const Color(0xFF1F2937), // Explicitly set dark color for better readability
-          ),
+                letterSpacing: 1,
+                color: const Color(
+                    0xFF334155), // Updated to match new theme color
+              ),
           textAlign: TextAlign.center,
         ),
       ],
@@ -452,7 +464,7 @@ class _FeatureCard extends StatelessWidget {
   final IconData icon;
   final List<Color> gradient;
   final VoidCallback onTap;
-  
+
   const _FeatureCard({
     required this.title,
     required this.description,
@@ -460,7 +472,7 @@ class _FeatureCard extends StatelessWidget {
     required this.gradient,
     required this.onTap,
   });
-  
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -513,32 +525,33 @@ class _FeatureCard extends StatelessWidget {
                     color: Colors.white,
                   ),
                 ),
-                
+
                 const SizedBox(height: 20),
-                
+
                 // Title
                 Text(
                   title,
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.5,
-                  ),
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.5,
+                      ),
                 ),
-                
+
                 const SizedBox(height: 12),
-                
+
                 // Description
                 Expanded(
                   child: Text(
                     description,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: const Color(0xFF1F2937), // Explicitly set dark color for better readability
-                    ),
+                          color: const Color(
+                              0xFF334155), // Updated to match new theme color
+                        ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 16),
-                
+
                 // Arrow indicator
                 Row(
                   children: [

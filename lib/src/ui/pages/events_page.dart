@@ -144,12 +144,12 @@ class _FeaturedEventCard extends StatelessWidget {
                 Container(
                   width: double.infinity,
                   height: double.infinity,
-                  decoration: BoxDecoration(
-                    borderRadius: const BorderRadius.only(
+                  decoration: const BoxDecoration(
+                    borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(24),
                       topRight: Radius.circular(24),
                     ),
-                    image: const DecorationImage(
+                    image: DecorationImage(
                       image: AssetImage('assets/images/event.png'),
                       fit: BoxFit.cover,
                     ),
@@ -157,8 +157,8 @@ class _FeaturedEventCard extends StatelessWidget {
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        const Color(0xFF1E3A8A),
-                        const Color(0xFF059669),
+                        Color(0xFF1E3A8A),
+                        Color(0xFF059669),
                       ],
                     ),
                   ),

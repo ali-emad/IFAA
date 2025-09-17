@@ -352,10 +352,10 @@ class _ArticleCard extends StatelessWidget {
                     const SizedBox(height: 12),
                     Row(
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.access_time,
                           size: 14,
-                          color: const Color(0xFF6B7280), // Lighter gray for subtle info
+                          color: Color(0xFF6B7280), // Lighter gray for subtle info
                         ),
                         const SizedBox(width: 4),
                         Text(
@@ -460,10 +460,10 @@ class _ArticleDetailView extends StatelessWidget {
                 // Article meta
                 Row(
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.access_time,
                       size: 16,
-                      color: const Color(0xFF6B7280), // Lighter gray for metadata
+                      color: Color(0xFF6B7280), // Lighter gray for metadata
                     ),
                     const SizedBox(width: 4),
                     Text(
@@ -473,10 +473,10 @@ class _ArticleDetailView extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 16),
-                    Icon(
+                    const Icon(
                       Icons.article,
                       size: 16,
-                      color: const Color(0xFF6B7280), // Lighter gray for metadata
+                      color: Color(0xFF6B7280), // Lighter gray for metadata
                     ),
                     const SizedBox(width: 4),
                     Text(
