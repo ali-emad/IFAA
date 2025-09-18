@@ -49,6 +49,22 @@ class UserService {
     } on FirebaseException catch (e) {
       // Handle Firebase-specific errors
       debugPrint('Firebase error creating/updating user document: ${e.code} - ${e.message}');
+      
+      // Try to create a minimal user document as fallback
+      if (e.code == 'permission-denied') {
+        debugPrint('Attempting to create minimal user document due to permissions');
+        try {
+          final userDoc = firestore.collection('users').doc(user.uid);
+          await userDoc.set({
+            'uid': user.uid,
+            'name': user.displayName ?? 'Anonymous User',
+            'email': user.email ?? '',
+            'lastLogin': FieldValue.serverTimestamp(),
+          }, SetOptions(merge: true));
+        } catch (fallbackError) {
+          debugPrint('Fallback user document creation also failed: $fallbackError');
+        }
+      }
     } catch (e) {
       // In production, you might want to use a logging framework instead
       debugPrint('Error creating/updating user document: $e');
@@ -66,6 +82,13 @@ class UserService {
     } on FirebaseException catch (e) {
       // Handle Firebase-specific errors
       debugPrint('Firebase error getting user role: ${e.code} - ${e.message}');
+      
+      // Return default role on permission errors
+      if (e.code == 'permission-denied') {
+        debugPrint('Returning default member role due to permissions');
+        return UserRole.member;
+      }
+      
       return UserRole.member; // Default role on error
     } catch (e) {
       // In production, you might want to use a logging framework instead

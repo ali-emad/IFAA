@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/auth_service.dart';
 
@@ -326,16 +327,9 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
             ),
             child: Row(
               children: [
-                CircleAvatar(
+                _ProfileImage(
+                  photoUrl: _currentUser?.photoUrl,
                   radius: 30,
-                  backgroundColor: Colors.white,
-                  backgroundImage: _currentUser?.photoUrl != null
-                      ? NetworkImage(_currentUser!.photoUrl!)
-                      : null,
-                  child: _currentUser?.photoUrl == null
-                      ? const Icon(Icons.person,
-                          size: 30, color: Color(0xFF1E3A8A))
-                      : null,
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -561,16 +555,9 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
           // Profile Picture
           Stack(
             children: [
-              CircleAvatar(
+              _ProfileImage(
+                photoUrl: _currentUser?.photoUrl,
                 radius: 60,
-                backgroundColor: const Color(0xFF1E3A8A).withValues(alpha: 0.1),
-                backgroundImage: _currentUser?.photoUrl != null
-                    ? NetworkImage(_currentUser!.photoUrl!)
-                    : null,
-                child: _currentUser?.photoUrl == null
-                    ? const Icon(Icons.person,
-                        size: 60, color: Color(0xFF1E3A8A))
-                    : null,
               ),
               Positioned(
                 bottom: 0,
@@ -835,6 +822,73 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
 }
 
 // Widget Components
+
+class _ProfileImage extends StatefulWidget {
+  final String? photoUrl;
+  final double radius;
+  final IconData placeholderIcon;
+  final Color placeholderColor;
+
+  const _ProfileImage({
+    required this.photoUrl,
+    required this.radius,
+    this.placeholderIcon = Icons.person,
+    this.placeholderColor = const Color(0xFF1E3A8A),
+  });
+
+  @override
+  _ProfileImageState createState() => _ProfileImageState();
+}
+
+class _ProfileImageState extends State<_ProfileImage> {
+  bool _imageLoadFailed = false;
+  int _retryCount = 0;
+  static const int maxRetries = 2;
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.photoUrl == null || widget.photoUrl!.isEmpty || _imageLoadFailed) {
+      return CircleAvatar(
+        radius: widget.radius,
+        backgroundColor: widget.placeholderColor.withValues(alpha: 0.1),
+        child: Icon(widget.placeholderIcon, size: widget.radius, color: widget.placeholderColor),
+      );
+    }
+
+    return CircleAvatar(
+      radius: widget.radius,
+      backgroundColor: Colors.white,
+      backgroundImage: CachedNetworkImageProvider(
+        widget.photoUrl!,
+        errorListener: (error) {
+          // Handle image loading errors
+          debugPrint('Error loading profile image: $error');
+          
+          // Handle rate limiting (429) and other network errors
+          if (_retryCount < maxRetries) {
+            // Retry after a delay
+            Future.delayed(Duration(seconds: 2 * (_retryCount + 1)), () {
+              if (mounted) {
+                setState(() {
+                  _retryCount++;
+                });
+              }
+            });
+          } else {
+            // Give up and show placeholder
+            if (mounted) {
+              setState(() {
+                _imageLoadFailed = true;
+              });
+            }
+          }
+        },
+      ),
+      child: const SizedBox(), // Empty child since we're using backgroundImage
+    );
+  }
+}
+
 class _StatCard extends StatelessWidget {
   final IconData icon;
   final String title;

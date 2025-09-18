@@ -1,0 +1,25 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users collection
+    match /users/{userId} {
+      // Allow users to read their own document
+      allow read: if request.auth != null && request.auth.uid == userId;
+      
+      // Allow users to create their own document
+      allow create: if request.auth != null && request.auth.uid == userId;
+      
+      // Allow users to update their own document
+      allow update: if request.auth != null && request.auth.uid == userId;
+      
+      // Allow admins to read any user document
+      allow read: if request.auth != null && 
+                  get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Allow public read access to general app data (adjust as needed)
+    match /{document=**} {
+      allow read, write: if false; // Default deny
+    }
+  }
+}

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class ResponsiveShell extends StatefulWidget {
   final StatefulNavigationShell shell;
@@ -413,7 +414,7 @@ class _SoccerDrawer extends StatelessWidget {
                   child: Container(
                     decoration: const BoxDecoration(
                       image: DecorationImage(
-                        image: NetworkImage(
+                        image: CachedNetworkImageProvider(
                             'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800&h=600&fit=crop'),
                         fit: BoxFit.cover,
                         opacity: 0.2,

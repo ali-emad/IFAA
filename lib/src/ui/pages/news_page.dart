@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-
+import 'package:go_router/go_router.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../models/post.dart';
 
 class NewsPage extends StatefulWidget {
@@ -200,8 +201,9 @@ class _FeaturedArticleCard extends StatelessWidget {
               height: 250,
               width: double.infinity,
               decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
                 image: DecorationImage(
-                  image: NetworkImage(post.imageUrl),
+                  image: CachedNetworkImageProvider(post.imageUrl),
                   fit: BoxFit.cover,
                 ),
               ),
@@ -320,7 +322,7 @@ class _ArticleCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
                   image: DecorationImage(
-                    image: NetworkImage(post.imageUrl),
+                    image: CachedNetworkImageProvider(post.imageUrl),
                     fit: BoxFit.cover,
                   ),
                 ),
