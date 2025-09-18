@@ -14,6 +14,7 @@ class User {
   final MembershipType membershipType;
   final bool isActive;
   final Map<String, dynamic> profile;
+  final UserRole role; // Add role field
 
   User({
     required this.id,
@@ -24,7 +25,14 @@ class User {
     required this.membershipType,
     required this.isActive,
     required this.profile,
+    this.role = UserRole.member, // Default role is member
   });
+}
+
+enum UserRole {
+  member,
+  admin,
+  editor,
 }
 
 enum MembershipType {
@@ -71,44 +79,10 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
   bool _isLoggedIn = false;
   bool _isLoading = false;
   User? _currentUser;
-  int _selectedTab = 0;
   late TabController _tabController;
 
   late final AuthService _authService;
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 4, vsync: this);
-    _authService = ref.read(authServiceProvider);
-    _checkCurrentUser();
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
-
-  void _checkCurrentUser() async {
-    final firebase_auth.User? user = await _authService.getCurrentUser();
-    if (user != null) {
-      setState(() {
-        _isLoggedIn = true;
-        _currentUser = User(
-          id: user.uid,
-          name: user.displayName ?? 'Google User',
-          email: user.email ?? '',
-          photoUrl: user.photoURL,
-          joinDate: user.metadata.creationTime ?? DateTime.now(), // Placeholder, ideally fetched from backend
-          membershipType: MembershipType.basic, // Placeholder
-          isActive: true, // Placeholder
-          profile: {}, // Placeholder
-        );
-      });
-    }
-  }
-
+  
   // Sample data - in production this would come from a database
   final List<Payment> _samplePayments = [
     Payment(
@@ -138,135 +112,36 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
   ];
 
   @override
-  Widget build(BuildContext context) {
-    if (!_isLoggedIn) {
-      return _buildAuthScreen();
-    }
-
-    return _buildMemberDashboard();
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 4, vsync: this);
+    _authService = ref.read(authServiceProvider);
+    _checkCurrentUser();
   }
 
-  // Authentication Screen
-  Widget _buildAuthScreen() {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF3B82F6), Color(0xFF10B981)],
-        ),
-      ),
-      child: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: Container(
-              constraints: const BoxConstraints(maxWidth: 400),
-              child: Card(
-                elevation: 20,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(32),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // IFAA Logo
-                      Container(
-                        width: 80,
-                        height: 80,
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF3B82F6), Color(0xFF10B981)],
-                          ),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: const Icon(
-                          Icons.sports_soccer,
-                          color: Colors.white,
-                          size: 40,
-                        ),
-                      ),
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
 
-                      const SizedBox(height: 24),
-
-                      Text(
-                        'Welcome to IFAA',
-                        style: Theme.of(context)
-                            .textTheme
-                            .headlineMedium
-                            ?.copyWith(
-                              fontWeight: FontWeight.w800,
-                              color: Colors.white,
-                            ),
-                      ),
-
-                      const SizedBox(height: 8),
-
-                      Text(
-                        'Join Australia\'s premier Iranian football community',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Colors.white.withOpacity(0.9),
-                            ),
-                        textAlign: TextAlign.center,
-                      ),
-
-                      const SizedBox(height: 32),
-
-                      // Google Sign In Button
-                      SizedBox(
-                        width: double.infinity,
-                        child: FilledButton.icon(
-                          onPressed: _isLoading ? null : _signInWithGoogle,
-                          icon: _isLoading
-                              ? const SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.white,
-                                  ),
-                                )
-                              : const Icon(Icons.login, size: 20),
-                          label: Text(
-                            _isLoading
-                                ? 'Signing in...'
-                                : 'Continue with Google',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 16,
-                            ),
-                          ),
-                          style: FilledButton.styleFrom(
-                            backgroundColor: const Color(0xFF1E3A8A),
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      const SizedBox(height: 24),
-
-                      // Terms and Privacy
-                      Text(
-                        'By continuing, you agree to our Terms of Service and Privacy Policy',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Colors.white.withOpacity(0.8),
-                            ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
+  void _checkCurrentUser() async {
+    final firebase_auth.User? user = _authService.getCurrentUser();
+    if (user != null) {
+      setState(() {
+        _isLoggedIn = true;
+        _currentUser = User(
+          id: user.uid,
+          name: user.displayName ?? 'Google User',
+          email: user.email ?? '',
+          photoUrl: user.photoURL,
+          joinDate: user.metadata.creationTime ?? DateTime.now(),
+          membershipType: MembershipType.basic,
+          isActive: true,
+          profile: {},
+        );
+      });
+    }
   }
 
   // Authentication Methods
@@ -275,6 +150,9 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
     try {
       final firebase_auth.User? user = await _authService.signInWithGoogle();
       if (user != null) {
+        // Get user role
+        final userRole = await _authService.getUserRole(user.uid);
+        
         setState(() {
           _isLoggedIn = true;
           _currentUser = User(
@@ -286,18 +164,56 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
             membershipType: MembershipType.basic,
             isActive: true,
             profile: {},
+            role: _mapStringToUserRole(userRole), // Add role
           );
         });
+        
+        // Show success message
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Successfully signed in!'),
+              backgroundColor: Color(0xFF10B981),
+            ),
+          );
+        }
       } else {
         setState(() => _isLoggedIn = false);
+        // Show error message
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Sign-in was cancelled or failed. Please try again.'),
+              backgroundColor: Color(0xFFEF4444),
+            ),
+          );
+        }
       }
     } catch (e) {
-      print('Error during Google Sign-In: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to sign in with Google: $e')),
-      );
+      debugPrint('Error during Google Sign-In: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to sign in with Google: ${e.toString()}'),
+            backgroundColor: const Color(0xFFEF4444),
+          ),
+        );
+      }
     } finally {
       setState(() => _isLoading = false);
+    }
+  }
+
+  UserRole _mapStringToUserRole(String? role) {
+    if (role == null) return UserRole.member;
+    
+    switch (role.toLowerCase()) {
+      case 'admin':
+        return UserRole.admin;
+      case 'editor':
+        return UserRole.editor;
+      default:
+        return UserRole.member;
     }
   }
 
@@ -306,7 +222,6 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
     setState(() {
       _isLoggedIn = false;
       _currentUser = null;
-      _selectedTab = 0;
     });
   }
 
@@ -319,6 +234,78 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
       case MembershipType.elite:
         return 'ELITE';
     }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (!_isLoggedIn) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Membership')),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text(
+                  'Welcome to IFAA Membership',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Sign in with your Google account to access your membership dashboard',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 16),
+                ),
+                const SizedBox(height: 32),
+                FilledButton.icon(
+                  onPressed: _signInWithGoogle,
+                  icon: Container(
+                    width: 24,
+                    height: 24,
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Center(
+                      child: Text(
+                        'G',
+                        style: TextStyle(
+                          color: Colors.red,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                  label: const Text('Sign in with Google'),
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 16,
+                    ),
+                    backgroundColor: Colors.white,
+                    foregroundColor: Colors.grey[800],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Scaffold(
+      body: _buildMemberDashboard(),
+    );
   }
 
   // Member Dashboard
@@ -358,7 +345,7 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
                       Text(
                         'Welcome back,',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Colors.white.withOpacity(0.8),
+                              color: Colors.white.withValues(alpha: 0.8),
                             ),
                       ),
                       Text(
@@ -399,7 +386,7 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
                                 vertical: 4,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.2),
+                                color: Colors.white.withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: const Text(
@@ -430,7 +417,6 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
             color: Colors.white,
             child: TabBar(
               controller: _tabController,
-              onTap: (index) => setState(() => _selectedTab = index),
               tabs: const [
                 Tab(icon: Icon(Icons.dashboard), text: 'Dashboard'),
                 Tab(icon: Icon(Icons.person), text: 'Profile'),
@@ -577,7 +563,7 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
             children: [
               CircleAvatar(
                 radius: 60,
-                backgroundColor: const Color(0xFF1E3A8A).withOpacity(0.1),
+                backgroundColor: const Color(0xFF1E3A8A).withValues(alpha: 0.1),
                 backgroundImage: _currentUser?.photoUrl != null
                     ? NetworkImage(_currentUser!.photoUrl!)
                     : null,
@@ -871,7 +857,7 @@ class _StatCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -883,7 +869,7 @@ class _StatCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(icon, color: color, size: 24),
@@ -930,7 +916,7 @@ class _PaymentCard extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: _getStatusColor().withOpacity(0.2),
+          color: _getStatusColor().withValues(alpha: 0.2),
         ),
       ),
       child: Row(
@@ -938,7 +924,7 @@ class _PaymentCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: _getStatusColor().withOpacity(0.1),
+              color: _getStatusColor().withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
@@ -997,7 +983,7 @@ class _PaymentCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color: _getStatusColor().withOpacity(0.1),
+                  color: _getStatusColor().withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
@@ -1086,7 +1072,7 @@ class _ProfileField extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: const Color(0xFF1E3A8A).withOpacity(0.1),
+              color: const Color(0xFF1E3A8A).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(icon, color: const Color(0xFF1E3A8A), size: 20),
@@ -1159,7 +1145,7 @@ class _PaymentOptionCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1E3A8A).withOpacity(0.1),
+                  color: const Color(0xFF1E3A8A).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(
@@ -1227,7 +1213,7 @@ class _TimelineItem extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(icon, color: color, size: 20),

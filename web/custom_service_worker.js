@@ -94,6 +94,11 @@ async function handleStaticAssetCaching(event) {
   const request = event.request;
   const url = new URL(request.url);
   
+  // Skip caching for non-GET requests (like POST)
+  if (request.method !== 'GET') {
+    return fetch(request);
+  }
+  
   // Try to get from cache first
   const cachedResponse = await caches.match(request);
   if (cachedResponse) {
