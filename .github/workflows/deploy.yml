@@ -51,7 +51,7 @@ jobs:
           convert assets/icons/ifaa-1.png -resize 512x512 web/icons/Icon-maskable-512.png
       
       - name: Build web
-        run: flutter build web --release --web-renderer html --base-href "/IFAA/"
+        run: flutter build web --release --base-href "/IFAA/"
       
       - name: Compress assets for faster loading
         run: |
@@ -177,7 +177,9 @@ jobs:
           
           # Update Kotlin version for compatibility
           cd android
-          sed -i 's/ext.kotlin_version = .*/ext.kotlin_version = "1.9.24"/' build.gradle
+          if [ -f "build.gradle" ]; then
+            sed -i 's/ext.kotlin_version = .*/ext.kotlin_version = "1.9.24"/' build.gradle
+          fi
           sed -i 's/id "org.jetbrains.kotlin.android" version .*/id "org.jetbrains.kotlin.android" version "1.9.24" apply false/' settings.gradle
           
           # Copy ifaa-1.png to Android app icon locations
