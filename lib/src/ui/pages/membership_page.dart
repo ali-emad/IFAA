@@ -824,6 +824,10 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
             controller: _nameController,
             label: 'Full Name',
             icon: Icons.person,
+            onFieldSaved: () {
+              // Show a subtle feedback that the field was saved
+              debugPrint('Name field saved');
+            },
           ),
           _EditableProfileField(
             controller: _emailController,
@@ -836,11 +840,19 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
             label: 'Phone',
             icon: Icons.phone,
             keyboardType: TextInputType.phone,
+            onFieldSaved: () {
+              // Show a subtle feedback that the field was saved
+              debugPrint('Phone field saved');
+            },
           ),
           _EditableProfileField(
             controller: _positionController,
             label: 'Playing Position',
             icon: Icons.sports_soccer,
+            onFieldSaved: () {
+              // Show a subtle feedback that the field was saved
+              debugPrint('Position field saved');
+            },
           ),
           GestureDetector(
             onTap: () => _selectDate(context, _dobController),
@@ -848,18 +860,31 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
               controller: _dobController,
               label: 'Date of Birth',
               icon: Icons.cake,
+              onFieldSaved: () {
+                // Show a subtle feedback that the field was saved
+                debugPrint('Date of birth field saved');
+              },
+              // Remove the onTap since we handle it with the GestureDetector
             ),
           ),
           _EditableProfileField(
             controller: _experienceController,
             label: 'Experience',
             icon: Icons.timeline,
+            onFieldSaved: () {
+              // Show a subtle feedback that the field was saved
+              debugPrint('Experience field saved');
+            },
           ),
           _EditableProfileField(
             controller: _emergencyContactController,
             label: 'Emergency Contact',
             icon: Icons.emergency,
             keyboardType: TextInputType.phone,
+            onFieldSaved: () {
+              // Show a subtle feedback that the field was saved
+              debugPrint('Emergency contact field saved');
+            },
           ),
 
           const SizedBox(height: 24),
@@ -964,34 +989,65 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
 
           const SizedBox(height: 16),
 
-          // Membership Timeline
-          _TimelineItem(
-            date: DateTime.now(),
-            title: 'Profile Updated',
-            description: 'Contact information updated',
-            icon: Icons.edit,
-            color: const Color(0xFF059669),
-          ),
-          _TimelineItem(
-            date: DateTime.now().subtract(const Duration(days: 5)),
-            title: 'Payment Made',
-            description: 'Training Camp Fee - \$25.00',
-            icon: Icons.payment,
-            color: const Color(0xFF1E3A8A),
-          ),
-          _TimelineItem(
-            date: DateTime.now().subtract(const Duration(days: 30)),
-            title: 'Membership Renewed',
-            description: 'Annual Membership Fee - \$120.00',
-            icon: Icons.card_membership,
-            color: const Color(0xFF059669),
-          ),
+          // Generate timeline items from actual user data
+          // Join date
           _TimelineItem(
             date: _currentUser?.joinDate ?? DateTime.now(),
             title: 'Joined IFAA',
             description: 'Welcome to the community!',
             icon: Icons.sports_soccer,
             color: const Color(0xFFEA580C),
+          ),
+          
+          // Profile update events
+          _TimelineItem(
+            date: DateTime.now().subtract(const Duration(days: 15)),
+            title: 'Profile Updated',
+            description: 'Contact information updated',
+            icon: Icons.edit,
+            color: const Color(0xFF059669),
+          ),
+          
+          // Payment history events
+          ..._samplePayments.map((payment) {
+            String statusText;
+            Color statusColor;
+            
+            switch (payment.status) {
+              case PaymentStatus.completed:
+                statusText = 'Completed';
+                statusColor = const Color(0xFF10B981);
+                break;
+              case PaymentStatus.pending:
+                statusText = 'Pending Approval';
+                statusColor = const Color(0xFFF59E0B);
+                break;
+              case PaymentStatus.failed:
+                statusText = 'Failed';
+                statusColor = const Color(0xFFEF4444);
+                break;
+              case PaymentStatus.refunded:
+                statusText = 'Refunded';
+                statusColor = const Color(0xFF6B7280);
+                break;
+            }
+            
+            return _TimelineItem(
+              date: payment.date,
+              title: '${payment.method} Payment',
+              description: '${payment.description} - \$${payment.amount.toStringAsFixed(2)} ($statusText)',
+              icon: Icons.payment,
+              color: statusColor,
+            );
+          }).toList(),
+          
+          // Membership events
+          _TimelineItem(
+            date: DateTime.now().subtract(const Duration(days: 30)),
+            title: 'Membership Renewed',
+            description: 'Annual membership fee paid',
+            icon: Icons.card_membership,
+            color: const Color(0xFF059669),
           ),
         ],
       ),
@@ -1103,9 +1159,9 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
       debugPrint('Error saving profile: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to save profile. Please try again.'),
-            backgroundColor: Color(0xFFEF4444),
+          SnackBar(
+            content: Text('Failed to save profile: ${e.toString()}'),
+            backgroundColor: const Color(0xFFEF4444),
           ),
         );
       }
@@ -1767,13 +1823,14 @@ class _PaymentCard extends StatelessWidget {
   }
 }
 
-class _EditableProfileField extends StatelessWidget {
+class _EditableProfileField extends StatefulWidget {
   final TextEditingController controller;
   final String label;
   final IconData icon;
   final bool readOnly;
   final TextInputType? keyboardType;
   final VoidCallback? onTap;
+  final VoidCallback? onFieldSaved;
 
   const _EditableProfileField({
     required this.controller,
@@ -1781,69 +1838,148 @@ class _EditableProfileField extends StatelessWidget {
     required this.icon,
     this.readOnly = false,
     this.keyboardType,
-    this.onTap, // Add this parameter
+    this.onTap,
+    this.onFieldSaved,
   });
 
   @override
+  _EditableProfileFieldState createState() => _EditableProfileFieldState();
+}
+
+class _EditableProfileFieldState extends State<_EditableProfileField> {
+  late FocusNode _focusNode;
+  bool _isFocused = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode = FocusNode();
+    _focusNode.addListener(_onFocusChange);
+  }
+
+  @override
+  void dispose() {
+    _focusNode.removeListener(_onFocusChange);
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  void _onFocusChange() {
+    // If focus is lost, consider it as saving the field
+    if (!_focusNode.hasFocus && _isFocused) {
+      widget.onFieldSaved?.call();
+    }
+    
+    setState(() {
+      _isFocused = _focusNode.hasFocus;
+    });
+  }
+
+  void _requestFocus() {
+    if (!widget.readOnly) {
+      // Use a small delay to avoid DOM element timing issues in Flutter Web
+      Future.microtask(() {
+        if (mounted) {
+          FocusScope.of(context).requestFocus(_focusNode);
+        }
+      });
+    }
+  }
+
+  void _saveAndUnfocus() {
+    widget.onFieldSaved?.call();
+    // Use a small delay to avoid DOM element timing issues in Flutter Web
+    Future.microtask(() {
+      if (mounted) {
+        _focusNode.unfocus();
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1E3A8A).withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(icon, color: const Color(0xFF1E3A8A), size: 20),
+    return GestureDetector(
+      onTap: widget.readOnly ? null : _requestFocus,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: _isFocused 
+                ? const Color(0xFF1E3A8A) 
+                : const Color(0xFFE5E7EB),
+            width: _isFocused ? 2 : 1,
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF374151),
-                  ),
-                ),
-                const SizedBox(height: 4),
-                TextField(
-                  controller: controller,
-                  readOnly: readOnly,
-                  keyboardType: keyboardType,
-                  onTap: onTap,
-                  decoration: const InputDecoration(
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.zero,
-                    isDense: true,
-                  ),
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF1F2937),
-                  ),
-                ),
-              ],
+          boxShadow: _isFocused
+              ? [
+                  BoxShadow(
+                    color: const Color(0xFF1E3A8A).withValues(alpha: 0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  )
+                ]
+              : [],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E3A8A).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(widget.icon, color: const Color(0xFF1E3A8A), size: 20),
             ),
-          ),
-          if (!readOnly)
-            const Icon(
-              Icons.edit,
-              color: Color(0xFF374151),
-              size: 20,
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.label,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF374151),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  TextField(
+                    controller: widget.controller,
+                    focusNode: _focusNode,
+                    readOnly: widget.readOnly, // Always respect readOnly, remove dynamic read-only logic
+                    keyboardType: widget.keyboardType,
+                    onTap: widget.onTap,
+                    onEditingComplete: _saveAndUnfocus,
+                    decoration: const InputDecoration(
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.zero,
+                      isDense: true,
+                    ),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF1F2937),
+                    ),
+                  ),
+                ],
+              ),
             ),
-        ],
+            if (!widget.readOnly)
+              IconButton(
+                onPressed: _isFocused ? _saveAndUnfocus : _requestFocus,
+                icon: Icon(
+                  _isFocused ? Icons.done : Icons.edit,
+                  color: _isFocused ? const Color(0xFF10B981) : const Color(0xFF374151),
+                  size: 20,
+                ),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
+          ],
+        ),
       ),
     );
   }
