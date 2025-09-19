@@ -8,3 +8,4 @@ export 'contact_page.dart';
 export 'news_page.dart';
 export 'event_detail_page.dart';
 export 'news_detail_page.dart';
+export 'admin_page.dart';

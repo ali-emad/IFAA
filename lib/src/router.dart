@@ -23,9 +23,13 @@ GoRouter buildRouter() => GoRouter(
           path: '/event/:id',
           builder: (context, state) => EventDetailPage(id: state.pathParameters['id']!),
         ),
-          GoRoute(
+        GoRoute(
           path: '/post/:id',
           builder: (context, state) => NewsDetailPage(id: state.pathParameters['id']!),
+        ),
+        GoRoute(
+          path: '/admin',
+          builder: (context, state) => const AdminPage(),
         ),
       ],
     );

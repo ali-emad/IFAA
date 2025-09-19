@@ -106,6 +106,13 @@ class AuthService {
     return await _firebaseService.getUserData(uid);
   }
   
+  /// Get all users (admin only)
+  ///
+  /// Returns a list of all users
+  Future<List<Map<String, dynamic>>> getAllUsers() async {
+    return await _firebaseService.getAllUsers();
+  }
+  
   /// Update user active status (admin only)
   ///
   /// [uid] - The user ID

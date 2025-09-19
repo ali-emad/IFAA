@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:go_router/go_router.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/auth_service.dart';
 
@@ -697,10 +698,23 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
                     ],
                   ),
                 ),
-                IconButton(
-                  onPressed: _logout,
-                  icon: const Icon(Icons.logout, color: Colors.white),
-                  tooltip: 'Logout',
+                Row(
+                  children: [
+                    IconButton(
+                      onPressed: _logout,
+                      icon: const Icon(Icons.logout, color: Colors.white),
+                      tooltip: 'Logout',
+                    ),
+                    if (_currentUser?.role == UserRole.admin)
+                      IconButton(
+                        onPressed: () {
+                          // Navigate to admin page
+                          context.go('/admin');
+                        },
+                        icon: const Icon(Icons.admin_panel_settings, color: Colors.white),
+                        tooltip: 'Admin Dashboard',
+                      ),
+                  ],
                 ),
               ],
             ),
