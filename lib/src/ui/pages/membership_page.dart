@@ -13,6 +13,8 @@ class User {
   final String email;
   final String? photoUrl;
   final DateTime joinDate;
+  final DateTime? lastLogin;
+  final DateTime? lastUpdated;
   final MembershipType membershipType;
   final bool isActive;
   final Map<String, dynamic> profile;
@@ -24,6 +26,8 @@ class User {
     required this.email,
     this.photoUrl,
     required this.joinDate,
+    this.lastLogin,
+    this.lastUpdated,
     required this.membershipType,
     required this.isActive,
     required this.profile,
@@ -38,6 +42,8 @@ class User {
       'email': email,
       'photoUrl': photoUrl,
       'joinDate': joinDate,
+      'lastLogin': lastLogin,
+      'lastUpdated': lastUpdated,
       'membershipType': membershipType.toString(),
       'isActive': isActive,
       'profile': profile,
@@ -55,6 +61,12 @@ class User {
       joinDate: (map['joinDate'] is Timestamp 
           ? (map['joinDate'] as Timestamp).toDate() 
           : DateTime.now()),
+      lastLogin: (map['lastLogin'] is Timestamp 
+          ? (map['lastLogin'] as Timestamp).toDate() 
+          : null),
+      lastUpdated: (map['lastUpdated'] is Timestamp 
+          ? (map['lastUpdated'] as Timestamp).toDate() 
+          : null),
       membershipType: _membershipTypeFromString(map['membershipType']),
       isActive: map['isActive'] ?? true,
       profile: Map<String, dynamic>.from(map['profile'] ?? {}),
@@ -1030,14 +1042,25 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
             color: const Color(0xFFEA580C),
           ),
           
-          // Profile update events
-          _TimelineItem(
-            date: DateTime.now().subtract(const Duration(days: 15)),
-            title: 'Profile Updated',
-            description: 'Contact information updated',
-            icon: Icons.edit,
-            color: const Color(0xFF059669),
-          ),
+          // Last login
+          if (_currentUser?.lastLogin != null)
+            _TimelineItem(
+              date: _currentUser!.lastLogin!,
+              title: 'Last Login',
+              description: 'Last time you accessed your account',
+              icon: Icons.login,
+              color: const Color(0xFF10B981),
+            ),
+          
+          // Last updated
+          if (_currentUser?.lastUpdated != null)
+            _TimelineItem(
+              date: _currentUser!.lastUpdated!,
+              title: 'Profile Updated',
+              description: 'Your profile was last modified',
+              icon: Icons.edit,
+              color: const Color(0xFF059669),
+            ),
           
           // Payment history events
           ..._samplePayments.map((payment) {
@@ -1071,15 +1094,6 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
               color: statusColor,
             );
           }).toList(),
-          
-          // Membership events
-          _TimelineItem(
-            date: DateTime.now().subtract(const Duration(days: 30)),
-            title: 'Membership Renewed',
-            description: 'Annual membership fee paid',
-            icon: Icons.card_membership,
-            color: const Color(0xFF059669),
-          ),
         ],
       ),
     );
