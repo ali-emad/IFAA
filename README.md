@@ -21,6 +21,44 @@ flutter build web --release --web-renderer html --base-href "/ifaa_app_template/
 # Deploy the build/web folder to GitHub Pages
 ```
 
+## ⚡ Performance Optimizations
+
+This app includes several caching technologies to decrease loading time:
+
+### Service Worker Enhancements
+- Custom service worker with advanced caching strategies
+- Resource-based caching with different expiration times
+- Critical assets pre-caching for instant loading
+- API response caching with timestamp validation
+
+### Asset Compression
+- Gzip compression for all static assets (JS, CSS, HTML, JSON, etc.)
+- Automated compression scripts
+- Up to 80% reduction in asset sizes
+
+### HTTP Optimization
+- Custom server that serves compressed assets with proper headers
+- Long-term caching headers for static assets
+- CORS support for API requests
+
+### Resource Preloading
+- HTML preloading directives for critical resources
+- Prefetching for secondary resources
+
+## 🧪 Testing CI Workflow Locally
+
+Before pushing changes, you can test the GitHub Actions workflow locally:
+
+```bash
+# Run the comprehensive test
+scripts/test-ci-locally.bat
+
+# Or validate YAML syntax only
+python -c "import yaml; f=open('.github/workflows/deploy.yml'); yaml.safe_load(f); print('YAML is valid')"
+```
+
+See [docs/testing-ci-workflow.md](docs/testing-ci-workflow.md) for detailed instructions.
+
 ## Features
 
 ### 🔐 Modern Authentication System
@@ -175,6 +213,20 @@ web/
 .github/
 └── workflows/
     └── deploy.yml       # GitHub Actions deployment
+
+scripts/                 # Performance optimization scripts
+├── build-and-compress.bat
+├── compress-assets.js
+├── serve-compressed.bat
+├── serve-compressed.py
+├── test-ci-locally.bat
+├── validate-github-actions.py
+└── validate-workflow.bat
+
+docs/                    # Documentation
+├── caching-optimizations.md
+├── performance-optimizations.md
+└── testing-ci-workflow.md
 ```
 
 ## Contributing

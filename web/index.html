@@ -21,8 +21,14 @@
   <meta name="description" content="Iranian Football Association Australia - IFAA App">
   <meta name="google-signin-client_id" content="1043998300274-ddosevpkijmrvvjjnat1jb58jri789og.apps.googleusercontent.com">
 
-  <!-- iOS meta tags & icons -->
+  <!-- Performance optimizations -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="HandheldFriendly" content="true">
+  <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
+  <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+
+  <!-- iOS meta tags & icons -->
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="IFAA">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
@@ -43,6 +49,19 @@
   <meta name="theme-color" content="#1E3A8A">
   <meta name="msapplication-navbutton-color" content="#1E3A8A">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  
+  <!-- Preload critical resources -->
+  <link rel="preload" href="flutter_bootstrap.js" as="script">
+  <link rel="preload" href="main.dart.js" as="script">
+  <link rel="prefetch" href="assets/FontManifest.json" as="fetch" crossorigin>
+  
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  
+  <!-- Google Platform Library for Google Sign-In -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
   <!-- Loading Screen -->
@@ -66,10 +85,10 @@
       }
     });
     
-    // Register service worker for PWA caching
+    // Register custom service worker for enhanced PWA caching
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function() {
-        navigator.serviceWorker.register('flutter_service_worker.js');
+        navigator.serviceWorker.register('custom_service_worker.js');
       });
     }
   </script>
@@ -88,6 +107,12 @@
       height: 100%;
       background: #F1F5F9;
       z-index: 9999;
+    }
+    
+    /* Optimize font rendering */
+    body {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
   </style>
 </body>
