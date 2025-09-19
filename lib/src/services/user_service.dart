@@ -9,7 +9,7 @@ class UserRole {
 }
 
 class UserService {
-  FirebaseFirestore? _firestore;
+  final FirebaseFirestore? _firestore;
   
   // Constructor that allows injecting Firestore for testing
   UserService([FirebaseFirestore? firestore]) : _firestore = firestore;
@@ -26,7 +26,7 @@ class UserService {
       final docSnapshot = await userDoc.get();
       
       if (!docSnapshot.exists) {
-        // Create new user document with default role
+        // Create new user document with default role and profile
         await userDoc.set({
           'uid': user.uid,
           'name': user.displayName ?? 'Anonymous User',
@@ -36,6 +36,13 @@ class UserService {
           'lastLogin': FieldValue.serverTimestamp(),
           'role': UserRole.member, // Default role
           'isActive': true,
+          'profile': {
+            'phone': '',
+            'position': '',
+            'dateOfBirth': '',
+            'experience': '',
+            'emergencyContact': '',
+          },
         });
       } else {
         // Update last login time
@@ -118,6 +125,25 @@ class UserService {
     return role == UserRole.editor;
   }
 
+  // Update user profile data
+  Future<void> updateUserProfile(String uid, Map<String, dynamic> profileData) async {
+    try {
+      final userDoc = firestore.collection('users').doc(uid);
+      await userDoc.update({
+        'profile': profileData,
+        'lastUpdated': FieldValue.serverTimestamp(),
+      });
+    } on FirebaseException catch (e) {
+      // Handle Firebase-specific errors
+      debugPrint('Firebase error updating user profile: ${e.code} - ${e.message}');
+      rethrow;
+    } catch (e) {
+      // In production, you might want to use a logging framework instead
+      debugPrint('Error updating user profile: $e');
+      rethrow;
+    }
+  }
+
   // Get all user data
   Future<Map<String, dynamic>?> getUserData(String uid) async {
     try {
@@ -134,6 +160,84 @@ class UserService {
       // In production, you might want to use a logging framework instead
       debugPrint('Error getting user data: $e');
       return null;
+    }
+  }
+
+  // Payment methods
+  
+  // Add a new payment record
+  Future<String> addPayment(String uid, Map<String, dynamic> paymentData) async {
+    try {
+      final paymentDoc = await firestore
+          .collection('users')
+          .doc(uid)
+          .collection('payments')
+          .add({
+        ...paymentData,
+        'createdAt': FieldValue.serverTimestamp(),
+        'status': 'pending', // Default status
+        'approved': false, // Default approval status
+      });
+      return paymentDoc.id;
+    } on FirebaseException catch (e) {
+      // Handle Firebase-specific errors
+      debugPrint('Firebase error adding payment: ${e.code} - ${e.message}');
+      rethrow;
+    } catch (e) {
+      // In production, you might want to use a logging framework instead
+      debugPrint('Error adding payment: $e');
+      rethrow;
+    }
+  }
+
+  // Get user payments
+  Future<List<Map<String, dynamic>>> getUserPayments(String uid) async {
+    try {
+      final paymentsSnapshot = await firestore
+          .collection('users')
+          .doc(uid)
+          .collection('payments')
+          .orderBy('createdAt', descending: true)
+          .get();
+      
+      return paymentsSnapshot.docs
+          .map((doc) => {
+                'id': doc.id,
+                ...doc.data(),
+              })
+          .toList();
+    } on FirebaseException catch (e) {
+      // Handle Firebase-specific errors
+      debugPrint('Firebase error getting payments: ${e.code} - ${e.message}');
+      return [];
+    } catch (e) {
+      // In production, you might want to use a logging framework instead
+      debugPrint('Error getting payments: $e');
+      return [];
+    }
+  }
+
+  // Update payment status (admin only)
+  Future<void> updatePaymentStatus(String uid, String paymentId, String status, bool approved) async {
+    try {
+      await firestore
+          .collection('users')
+          .doc(uid)
+          .collection('payments')
+          .doc(paymentId)
+          .update({
+        'status': status,
+        'approved': approved,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    } on FirebaseException catch (e) {
+      // Handle Firebase-specific errors
+      debugPrint('Firebase error updating payment status: ${e.code} - ${e.message}');
+      rethrow;
+    } catch (e) {
+      // In production, you might want to use a logging framework instead
+      debugPrint('Error updating payment status: $e');
+      rethrow;
     }
   }
 }

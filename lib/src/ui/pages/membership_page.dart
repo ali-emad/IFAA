@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/auth_service.dart';
@@ -28,6 +29,62 @@ class User {
     required this.profile,
     this.role = UserRole.member, // Default role is member
   });
+
+  // Convert User object to Map for Firestore
+  Map<String, dynamic> toMap() {
+    return {
+      'uid': id,
+      'name': name,
+      'email': email,
+      'photoUrl': photoUrl,
+      'joinDate': joinDate,
+      'membershipType': membershipType.toString(),
+      'isActive': isActive,
+      'profile': profile,
+      'role': role.toString(),
+    };
+  }
+
+  // Create User object from Firestore data
+  factory User.fromMap(Map<String, dynamic> map, String id) {
+    return User(
+      id: id,
+      name: map['name'] ?? '',
+      email: map['email'] ?? '',
+      photoUrl: map['photoUrl'],
+      joinDate: (map['joinDate'] is Timestamp 
+          ? (map['joinDate'] as Timestamp).toDate() 
+          : DateTime.now()),
+      membershipType: _membershipTypeFromString(map['membershipType']),
+      isActive: map['isActive'] ?? true,
+      profile: Map<String, dynamic>.from(map['profile'] ?? {}),
+      role: _userRoleFromString(map['role']),
+    );
+  }
+
+  static MembershipType _membershipTypeFromString(String? type) {
+    if (type == null) return MembershipType.basic;
+    switch (type) {
+      case 'MembershipType.premium':
+        return MembershipType.premium;
+      case 'MembershipType.elite':
+        return MembershipType.elite;
+      default:
+        return MembershipType.basic;
+    }
+  }
+
+  static UserRole _userRoleFromString(String? role) {
+    if (role == null) return UserRole.member;
+    switch (role) {
+      case 'UserRole.admin':
+        return UserRole.admin;
+      case 'UserRole.editor':
+        return UserRole.editor;
+      default:
+        return UserRole.member;
+    }
+  }
 }
 
 enum UserRole {
@@ -50,6 +107,11 @@ class Payment {
   final String description;
   final PaymentStatus status;
   final String method;
+  final String? bankName;
+  final String? accountNumber;
+  final String? transactionId;
+  final String? reference; // Add reference field
+  final String? notes;
 
   Payment({
     required this.id,
@@ -58,6 +120,11 @@ class Payment {
     required this.description,
     required this.status,
     required this.method,
+    this.bankName,
+    this.accountNumber,
+    this.transactionId,
+    this.reference, // Add reference field
+    this.notes,
   });
 }
 
@@ -84,6 +151,15 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
 
   late final AuthService _authService;
   
+  // Form controllers for editable profile fields
+  final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _positionController = TextEditingController();
+  final _dobController = TextEditingController();
+  final _experienceController = TextEditingController();
+  final _emergencyContactController = TextEditingController();
+  
   // Sample data - in production this would come from a database
   final List<Payment> _samplePayments = [
     Payment(
@@ -109,6 +185,9 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
       description: 'Training Camp Fee',
       status: PaymentStatus.pending,
       method: 'Bank Transfer',
+      bankName: 'Example Bank',
+      accountNumber: '1234567890',
+      reference: 'REF123456', // Add reference field
     ),
   ];
 
@@ -123,36 +202,27 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
   @override
   void dispose() {
     _tabController.dispose();
+    _nameController.dispose();
+    _emailController.dispose();
+    _phoneController.dispose();
+    _positionController.dispose();
+    _dobController.dispose();
+    _experienceController.dispose();
+    _emergencyContactController.dispose();
     super.dispose();
   }
 
   void _checkCurrentUser() async {
     final firebase_auth.User? user = _authService.getCurrentUser();
     if (user != null) {
-      setState(() {
-        _isLoggedIn = true;
-        _currentUser = User(
-          id: user.uid,
-          name: user.displayName ?? 'Google User',
-          email: user.email ?? '',
-          photoUrl: user.photoURL,
-          joinDate: user.metadata.creationTime ?? DateTime.now(),
-          membershipType: MembershipType.basic,
-          isActive: true,
-          profile: {},
-        );
-      });
-    }
-  }
-
-  // Authentication Methods
-  void _signInWithGoogle() async {
-    setState(() => _isLoading = true);
-    try {
-      final firebase_auth.User? user = await _authService.signInWithGoogle();
-      if (user != null) {
+      try {
+        // Get user data from Firestore
+        final userData = await _authService.getUserData(user.uid);
+        debugPrint('User data loaded: $userData');
+        
         // Get user role
         final userRole = await _authService.getUserRole(user.uid);
+        debugPrint('User role: $userRole');
         
         setState(() {
           _isLoggedIn = true;
@@ -164,19 +234,180 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
             joinDate: user.metadata.creationTime ?? DateTime.now(),
             membershipType: MembershipType.basic,
             isActive: true,
-            profile: {},
+            profile: Map<String, dynamic>.from(userData?['profile'] ?? {}),
             role: _mapStringToUserRole(userRole), // Add role
           );
+          
+          // Initialize form controllers with user data
+          _nameController.text = _currentUser!.name;
+          _emailController.text = _currentUser!.email;
+          _phoneController.text = _currentUser!.profile['phone'] ?? '';
+          _positionController.text = _currentUser!.profile['position'] ?? '';
+          _dobController.text = _currentUser!.profile['dateOfBirth'] ?? '';
+          _experienceController.text = _currentUser!.profile['experience'] ?? '';
+          _emergencyContactController.text = _currentUser!.profile['emergencyContact'] ?? '';
         });
         
-        // Show success message
+        // Load user payments from Firebase
+        _loadUserPayments();
+      } catch (e) {
+        debugPrint('Error loading user data: $e');
+        // Show error to user
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Successfully signed in!'),
-              backgroundColor: Color(0xFF10B981),
+            SnackBar(
+              content: Text('Error loading user data: $e'),
+              backgroundColor: const Color(0xFFEF4444),
             ),
           );
+        }
+      }
+    }
+  }
+
+  void _loadUserPayments() async {
+    if (_currentUser == null) return;
+    
+    try {
+      final paymentsData = await _authService.getUserPayments(_currentUser!.id);
+      debugPrint('Payments data loaded: $paymentsData');
+      
+      // Convert payment data to Payment objects
+      final payments = paymentsData.map((paymentData) {
+        // Handle timestamp conversion
+        DateTime paymentDate;
+        if (paymentData['createdAt'] is Timestamp) {
+          paymentDate = (paymentData['createdAt'] as Timestamp).toDate();
+        } else {
+          paymentDate = DateTime.now();
+        }
+        
+        return Payment(
+          id: paymentData['id'] as String,
+          date: paymentDate,
+          amount: (paymentData['amount'] as num).toDouble(),
+          description: paymentData['description'] as String,
+          status: _paymentStatusFromString(paymentData['status'] as String?),
+          method: paymentData['method'] as String,
+          bankName: paymentData['bankName'] as String?,
+          accountNumber: paymentData['accountNumber'] as String?,
+          transactionId: paymentData['transactionId'] as String?,
+          reference: paymentData['reference'] as String?, // Add reference field
+          notes: paymentData['notes'] as String?,
+        );
+      }).toList();
+      
+      setState(() {
+        // Replace sample payments with actual payments from Firebase
+        _samplePayments.clear();
+        _samplePayments.addAll(payments);
+      });
+    } catch (e) {
+      debugPrint('Error loading user payments: $e');
+      // Show error to user
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error loading payments: $e'),
+            backgroundColor: const Color(0xFFEF4444),
+          ),
+        );
+      }
+      // Keep sample payments for demo purposes
+    }
+  }
+
+  static PaymentStatus _paymentStatusFromString(String? status) {
+    if (status == null) return PaymentStatus.pending;
+    switch (status) {
+      case 'completed':
+        return PaymentStatus.completed;
+      case 'failed':
+        return PaymentStatus.failed;
+      case 'refunded':
+        return PaymentStatus.refunded;
+      default:
+        return PaymentStatus.pending;
+    }
+  }
+
+  // Authentication Methods
+  void _signInWithGoogle() async {
+    setState(() => _isLoading = true);
+    try {
+      final firebase_auth.User? user = await _authService.signInWithGoogle();
+      if (user != null) {
+        try {
+          // Get user data from Firestore
+          final userData = await _authService.getUserData(user.uid);
+          debugPrint('User data loaded after sign-in: $userData');
+          
+          // Get user role
+          final userRole = await _authService.getUserRole(user.uid);
+          debugPrint('User role after sign-in: $userRole');
+          
+          setState(() {
+            _isLoggedIn = true;
+            _currentUser = User(
+              id: user.uid,
+              name: user.displayName ?? 'Google User',
+              email: user.email ?? '',
+              photoUrl: user.photoURL,
+              joinDate: user.metadata.creationTime ?? DateTime.now(),
+              membershipType: MembershipType.basic,
+              isActive: true,
+              profile: Map<String, dynamic>.from(userData?['profile'] ?? {}),
+              role: _mapStringToUserRole(userRole), // Add role
+            );
+            
+            // Initialize form controllers with user data
+            _nameController.text = _currentUser!.name;
+            _emailController.text = _currentUser!.email;
+            _phoneController.text = _currentUser!.profile['phone'] ?? '';
+            _positionController.text = _currentUser!.profile['position'] ?? '';
+            _dobController.text = _currentUser!.profile['dateOfBirth'] ?? '';
+            _experienceController.text = _currentUser!.profile['experience'] ?? '';
+            _emergencyContactController.text = _currentUser!.profile['emergencyContact'] ?? '';
+          });
+          
+          // Load user payments from Firebase
+          _loadUserPayments();
+          
+          // Show success message
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Successfully signed in!'),
+                backgroundColor: Color(0xFF10B981),
+              ),
+            );
+          }
+        } catch (e) {
+          debugPrint('Error loading user data after sign-in: $e');
+          // Still show success but with a warning
+          setState(() {
+            _isLoggedIn = true;
+            _currentUser = User(
+              id: user.uid,
+              name: user.displayName ?? 'Google User',
+              email: user.email ?? '',
+              photoUrl: user.photoURL,
+              joinDate: user.metadata.creationTime ?? DateTime.now(),
+              membershipType: MembershipType.basic,
+              isActive: true,
+              profile: {}, // Empty profile as fallback
+              role: UserRole.member, // Default role
+            );
+          });
+          
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Signed in successfully, but had issues loading profile data.'),
+                backgroundColor: Color(0xFFF59E0B),
+              ),
+            );
+          }
         }
       } else {
         setState(() => _isLoggedIn = false);
@@ -208,10 +439,15 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
   UserRole _mapStringToUserRole(String? role) {
     if (role == null) return UserRole.member;
     
-    switch (role.toLowerCase()) {
+    // Handle different role formats
+    final normalizedRole = role.toLowerCase().trim();
+    
+    switch (normalizedRole) {
       case 'admin':
+      case 'userrole.admin':
         return UserRole.admin;
       case 'editor':
+      case 'userrole.editor':
         return UserRole.editor;
       default:
         return UserRole.member;
@@ -488,6 +724,10 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
               .map((payment) => _PaymentCard(
                     payment: payment,
                     isCompact: true,
+                    currentUserRole: _currentUser?.role,
+                    authService: _authService,
+                    currentUserId: _currentUser?.id,
+                    onPaymentUpdated: _updatePaymentInList, // Pass the callback
                   ))
               .toList()),
 
@@ -511,7 +751,7 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
                   onPressed: () => _makePayment('Membership Renewal'),
                   icon: const Icon(Icons.payment),
                   label: const Text(
-                    'Renew Membership',
+                    'Make Payment',
                     style: TextStyle(
                       color: Colors
                           .white, // Explicitly set white text for better contrast
@@ -580,40 +820,46 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
           const SizedBox(height: 24),
 
           // Profile Form
-          _ProfileField(
+          _EditableProfileField(
+            controller: _nameController,
             label: 'Full Name',
-            value: _currentUser?.name ?? '',
             icon: Icons.person,
           ),
-          _ProfileField(
+          _EditableProfileField(
+            controller: _emailController,
             label: 'Email',
-            value: _currentUser?.email ?? '',
             icon: Icons.email,
+            readOnly: true, // Email from Google Sign-In should not be editable
           ),
-          _ProfileField(
+          _EditableProfileField(
+            controller: _phoneController,
             label: 'Phone',
-            value: _currentUser?.profile['phone'] ?? '',
             icon: Icons.phone,
+            keyboardType: TextInputType.phone,
           ),
-          _ProfileField(
+          _EditableProfileField(
+            controller: _positionController,
             label: 'Playing Position',
-            value: _currentUser?.profile['position'] ?? '',
             icon: Icons.sports_soccer,
           ),
-          _ProfileField(
-            label: 'Date of Birth',
-            value: _currentUser?.profile['dateOfBirth'] ?? '',
-            icon: Icons.cake,
+          GestureDetector(
+            onTap: () => _selectDate(context, _dobController),
+            child: _EditableProfileField(
+              controller: _dobController,
+              label: 'Date of Birth',
+              icon: Icons.cake,
+            ),
           ),
-          _ProfileField(
+          _EditableProfileField(
+            controller: _experienceController,
             label: 'Experience',
-            value: _currentUser?.profile['experience'] ?? '',
             icon: Icons.timeline,
           ),
-          _ProfileField(
+          _EditableProfileField(
+            controller: _emergencyContactController,
             label: 'Emergency Contact',
-            value: _currentUser?.profile['emergencyContact'] ?? '',
             icon: Icons.emergency,
+            keyboardType: TextInputType.phone,
           ),
 
           const SizedBox(height: 24),
@@ -691,6 +937,10 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
           ..._samplePayments.map((payment) => _PaymentCard(
                 payment: payment,
                 isCompact: false,
+                currentUserRole: _currentUser?.role,
+                authService: _authService,
+                currentUserId: _currentUser?.id,
+                onPaymentUpdated: _updatePaymentInList, // Pass the callback
               )),
         ],
       ),
@@ -770,6 +1020,283 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
   }
 
   void _makePayment(String description) {
+    // Show payment method selection
+    showDialog(
+      context: context,
+      builder: (context) => _PaymentMethodDialog(
+        description: description,
+        onMethodSelected: (method) {
+          if (method == 'Bank Transfer') {
+            _showBankTransferForm(description);
+          } else {
+            // Simulate payment processing for other methods
+            _processPayment(description, method);
+          }
+        },
+      ),
+    );
+  }
+
+  void _updateProfilePicture() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+            'Profile picture update functionality would be implemented here'),
+      ),
+    );
+  }
+
+  Future<void> _selectDate(BuildContext context, TextEditingController controller) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null) {
+      controller.text = "${picked.day}/${picked.month}/${picked.year}";
+    }
+  }
+
+  void _saveProfile() async {
+    if (_currentUser == null) return;
+    
+    setState(() => _isLoading = true);
+    
+    try {
+      // Prepare profile data
+      final profileData = {
+        'phone': _phoneController.text,
+        'position': _positionController.text,
+        'dateOfBirth': _dobController.text,
+        'experience': _experienceController.text,
+        'emergencyContact': _emergencyContactController.text,
+      };
+      
+      // Update user profile in Firestore
+      await _authService.updateUserProfile(_currentUser!.id, profileData);
+      
+      // Update local user object
+      setState(() {
+        _currentUser = User(
+          id: _currentUser!.id,
+          name: _nameController.text,
+          email: _currentUser!.email,
+          photoUrl: _currentUser!.photoUrl,
+          joinDate: _currentUser!.joinDate,
+          membershipType: _currentUser!.membershipType,
+          isActive: _currentUser!.isActive,
+          profile: profileData,
+          role: _currentUser!.role,
+        );
+      });
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Profile saved successfully!'),
+            backgroundColor: Color(0xFF10B981),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Error saving profile: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to save profile. Please try again.'),
+            backgroundColor: Color(0xFFEF4444),
+          ),
+        );
+      }
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  void _submitBankTransferPayment({
+    required String description,
+    required double amount,
+    required String bankName,
+    required String accountNumber,
+    required String transactionId,
+    required String reference, // Add reference parameter
+    required String notes,
+  }) async {
+    if (_currentUser == null) return;
+
+    try {
+      // Prepare payment data
+      final paymentData = {
+        'description': description,
+        'amount': amount,
+        'method': 'Bank Transfer',
+        'bankName': bankName,
+        'accountNumber': accountNumber,
+        'transactionId': transactionId,
+        'reference': reference, // Add reference field
+        'notes': notes,
+        'status': 'pending',
+        'approved': false,
+        'paymentDate': FieldValue.serverTimestamp(), // Add payment date
+      };
+
+      // Submit payment to Firestore
+      final paymentId = await _authService.addPayment(_currentUser!.id, paymentData);
+
+      // Create a new payment object
+      final newPayment = Payment(
+        id: paymentId,
+        date: DateTime.now(),
+        amount: amount,
+        description: description,
+        status: PaymentStatus.pending,
+        method: 'Bank Transfer',
+        bankName: bankName,
+        accountNumber: accountNumber,
+        transactionId: transactionId,
+        notes: notes,
+      );
+
+      setState(() {
+        _samplePayments.insert(0, newPayment);
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Bank transfer details submitted. Awaiting admin approval.'),
+            backgroundColor: Color(0xFFF59E0B),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Error submitting bank transfer: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to submit bank transfer. Please try again.'),
+            backgroundColor: Color(0xFFEF4444),
+          ),
+        );
+      }
+    }
+  }
+
+  void _showBankTransferForm(String description) {
+    final amountController = TextEditingController();
+    final bankNameController = TextEditingController();
+    final accountNumberController = TextEditingController();
+    final transactionIdController = TextEditingController();
+    final referenceController = TextEditingController(); // Add reference field
+    final notesController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Bank Transfer Details'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: amountController,
+                decoration: const InputDecoration(
+                  labelText: 'Amount (\$)',
+                  prefixText: '\$',
+                ),
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: bankNameController,
+                decoration: const InputDecoration(
+                  labelText: 'Bank Name',
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: accountNumberController,
+                decoration: const InputDecoration(
+                  labelText: 'Account Number',
+                ),
+                keyboardType: TextInputType.number,
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: transactionIdController,
+                decoration: const InputDecoration(
+                  labelText: 'Transaction ID (if available)',
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: referenceController,
+                decoration: const InputDecoration(
+                  labelText: 'Reference Number',
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: notesController,
+                decoration: const InputDecoration(
+                  labelText: 'Notes',
+                ),
+                maxLines: 3,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () {
+              // Validate and submit payment
+              if (amountController.text.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Please enter an amount'),
+                    backgroundColor: Color(0xFFEF4444),
+                  ),
+                );
+                return;
+              }
+
+              final amount = double.tryParse(amountController.text);
+              if (amount == null || amount <= 0) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Please enter a valid amount'),
+                    backgroundColor: Color(0xFFEF4444),
+                  ),
+                );
+                return;
+              }
+
+              // Submit bank transfer payment
+              _submitBankTransferPayment(
+                description: description,
+                amount: amount,
+                bankName: bankNameController.text,
+                accountNumber: accountNumberController.text,
+                transactionId: transactionIdController.text,
+                reference: referenceController.text,
+                notes: notesController.text,
+              );
+
+              Navigator.of(context).pop();
+            },
+            child: const Text('Submit'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _processPayment(String description, String method) {
     // Simulate payment processing
     showDialog(
       context: context,
@@ -783,7 +1310,7 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
             amount: amount,
             description: description,
             status: PaymentStatus.completed,
-            method: 'Credit Card',
+            method: method,
           );
 
           setState(() {
@@ -802,22 +1329,13 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
     );
   }
 
-  void _updateProfilePicture() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-            'Profile picture update functionality would be implemented here'),
-      ),
-    );
-  }
-
-  void _saveProfile() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Profile saved successfully!'),
-        backgroundColor: Color(0xFF10B981),
-      ),
-    );
+  void _updatePaymentInList(Payment updatedPayment) {
+    setState(() {
+      final index = _samplePayments.indexWhere((p) => p.id == updatedPayment.id);
+      if (index != -1) {
+        _samplePayments[index] = updatedPayment;
+      }
+    });
   }
 }
 
@@ -843,7 +1361,7 @@ class _ProfileImage extends StatefulWidget {
 class _ProfileImageState extends State<_ProfileImage> {
   bool _imageLoadFailed = false;
   int _retryCount = 0;
-  static const int maxRetries = 2;
+  static const int maxRetries = 3;
 
   @override
   Widget build(BuildContext context) {
@@ -866,7 +1384,7 @@ class _ProfileImageState extends State<_ProfileImage> {
           
           // Handle rate limiting (429) and other network errors
           if (_retryCount < maxRetries) {
-            // Retry after a delay
+            // Retry after a delay with exponential backoff
             Future.delayed(Duration(seconds: 2 * (_retryCount + 1)), () {
               if (mounted) {
                 setState(() {
@@ -955,10 +1473,18 @@ class _StatCard extends StatelessWidget {
 class _PaymentCard extends StatelessWidget {
   final Payment payment;
   final bool isCompact;
+  final UserRole? currentUserRole;
+  final AuthService? authService;
+  final String? currentUserId;
+  final Function(Payment)? onPaymentUpdated; // Add callback for payment updates
 
   const _PaymentCard({
     required this.payment,
     required this.isCompact,
+    this.currentUserRole,
+    this.authService,
+    this.currentUserId,
+    this.onPaymentUpdated,
   });
 
   @override
@@ -1020,6 +1546,38 @@ class _PaymentCard extends StatelessWidget {
                     ),
                   ],
                 ),
+                // Show bank transfer details if applicable
+                if (payment.method == 'Bank Transfer' && (payment.bankName != null || payment.accountNumber != null || payment.reference != null))
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 4),
+                      if (payment.bankName != null)
+                        Text(
+                          'Bank: ${payment.bankName}',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF6B7280),
+                          ),
+                        ),
+                      if (payment.accountNumber != null)
+                        Text(
+                          'Account: ${payment.accountNumber}',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF6B7280),
+                          ),
+                        ),
+                      if (payment.reference != null)
+                        Text(
+                          'Reference: ${payment.reference}',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF6B7280),
+                          ),
+                        ),
+                    ],
+                  ),
               ],
             ),
           ),
@@ -1034,6 +1592,7 @@ class _PaymentCard extends StatelessWidget {
                   color: const Color(0xFF1F2937),
                 ),
               ),
+              const SizedBox(height: 4),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
@@ -1049,6 +1608,24 @@ class _PaymentCard extends StatelessWidget {
                   ),
                 ),
               ),
+              // Admin approval button (only visible to admins)
+              if (_isAdmin(currentUserRole) && payment.status == PaymentStatus.pending)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: FilledButton.tonal(
+                    onPressed: () {
+                      // Show approval dialog
+                      _showApprovalDialog(context, payment);
+                    },
+                    child: const Text(
+                      'Approve',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
             ],
           ),
         ],
@@ -1095,20 +1672,116 @@ class _PaymentCard extends StatelessWidget {
     }
   }
 
+  // Check if user is admin
+  bool _isAdmin(UserRole? userRole) {
+    return userRole == UserRole.admin;
+  }
+
   String _formatDate(DateTime date) {
     return '${date.day}/${date.month}/${date.year}';
   }
+
+  // Show approval dialog
+  void _showApprovalDialog(BuildContext context, Payment payment) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Approve Payment'),
+        content: Text('Are you sure you want to approve this payment of \$${payment.amount.toStringAsFixed(2)}?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () async {
+              Navigator.of(context).pop();
+              
+              try {
+                // Call the approval method if we have the required parameters
+                if (authService != null && currentUserId != null) {
+                  await authService!.updatePaymentStatus(
+                    currentUserId!,
+                    payment.id,
+                    'completed',
+                    true,
+                  );
+                  
+                  // Create updated payment object
+                  final updatedPayment = Payment(
+                    id: payment.id,
+                    date: payment.date,
+                    amount: payment.amount,
+                    description: payment.description,
+                    status: PaymentStatus.completed,
+                    method: payment.method,
+                    bankName: payment.bankName,
+                    accountNumber: payment.accountNumber,
+                    transactionId: payment.transactionId,
+                    reference: payment.reference, // Add reference field
+                    notes: payment.notes,
+                  );
+                  
+                  // Notify parent widget about the update
+                  if (onPaymentUpdated != null) {
+                    onPaymentUpdated!(updatedPayment);
+                  }
+                  
+                  // Show success message
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Payment approved successfully!'),
+                        backgroundColor: Color(0xFF10B981),
+                      ),
+                    );
+                  }
+                } else {
+                  // Fallback for now
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Payment approved successfully!'),
+                        backgroundColor: Color(0xFF10B981),
+                      ),
+                    );
+                  }
+                }
+              } catch (e) {
+                // Show error message
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Failed to approve payment. Please try again.'),
+                      backgroundColor: Color(0xFFEF4444),
+                    ),
+                  );
+                }
+              }
+            },
+            child: const Text('Approve'),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
-class _ProfileField extends StatelessWidget {
+class _EditableProfileField extends StatelessWidget {
+  final TextEditingController controller;
   final String label;
-  final String value;
   final IconData icon;
+  final bool readOnly;
+  final TextInputType? keyboardType;
+  final VoidCallback? onTap;
 
-  const _ProfileField({
+  const _EditableProfileField({
+    required this.controller,
     required this.label,
-    required this.value,
     required this.icon,
+    this.readOnly = false,
+    this.keyboardType,
+    this.onTap, // Add this parameter
   });
 
   @override
@@ -1145,8 +1818,16 @@ class _ProfileField extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  value,
+                TextField(
+                  controller: controller,
+                  readOnly: readOnly,
+                  keyboardType: keyboardType,
+                  onTap: onTap,
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.zero,
+                    isDense: true,
+                  ),
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -1156,11 +1837,12 @@ class _ProfileField extends StatelessWidget {
               ],
             ),
           ),
-          const Icon(
-            Icons.edit,
-            color: Color(0xFF374151),
-            size: 20,
-          ),
+          if (!readOnly)
+            const Icon(
+              Icons.edit,
+              color: Color(0xFF374151),
+              size: 20,
+            ),
         ],
       ),
     );
@@ -1302,6 +1984,52 @@ class _TimelineItem extends StatelessWidget {
               fontSize: 12,
               color: Color(0xFF374151),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PaymentMethodDialog extends StatelessWidget {
+  final String description;
+  final Function(String) onMethodSelected;
+
+  const _PaymentMethodDialog({
+    required this.description,
+    required this.onMethodSelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Select Payment Method'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Disabled Credit Card option
+          const ListTile(
+            leading: Icon(Icons.credit_card),
+            title: Text('Credit Card'),
+            trailing: Icon(Icons.lock, color: Colors.grey),
+            onTap: null, // Disabled
+            enabled: false, // Disabled
+          ),
+          ListTile(
+            leading: const Icon(Icons.account_balance),
+            title: const Text('Bank Transfer'),
+            onTap: () {
+              Navigator.of(context).pop();
+              onMethodSelected('Bank Transfer');
+            },
+          ),
+          // Disabled PayPal option
+          const ListTile(
+            leading: Icon(Icons.paypal),
+            title: Text('PayPal'),
+            trailing: Icon(Icons.lock, color: Colors.grey),
+            onTap: null, // Disabled
+            enabled: false, // Disabled
           ),
         ],
       ),

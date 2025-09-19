@@ -15,6 +15,16 @@ service cloud.firestore {
       // Allow admins to read any user document
       allow read: if request.auth != null && 
                   get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+                  
+      // Payments subcollection
+      match /payments/{paymentId} {
+        // Allow users to read, create, and update their own payments
+        allow read, create, update: if request.auth != null && request.auth.uid == userId;
+        
+        // Allow admins to read any payment
+        allow read: if request.auth != null && 
+                    get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      }
     }
     
     // Allow public read access to general app data (adjust as needed)

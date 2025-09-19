@@ -65,6 +65,39 @@ class AuthService {
     return await _firebaseService.isAdmin(uid);
   }
   
+  /// Update user profile
+  ///
+  /// [uid] - The user ID to update
+  /// [profileData] - The profile data to update
+  Future<void> updateUserProfile(String uid, Map<String, dynamic> profileData) async {
+    await _firebaseService.updateUserProfile(uid, profileData);
+  }
+  
+  /// Add a payment for a user
+  ///
+  /// [uid] - The user ID
+  /// [paymentData] - The payment data to add
+  Future<String> addPayment(String uid, Map<String, dynamic> paymentData) async {
+    return await _firebaseService.addPayment(uid, paymentData);
+  }
+  
+  /// Get user payments
+  ///
+  /// [uid] - The user ID
+  Future<List<Map<String, dynamic>>> getUserPayments(String uid) async {
+    return await _firebaseService.getUserPayments(uid);
+  }
+  
+  /// Update payment status (admin only)
+  ///
+  /// [uid] - The user ID
+  /// [paymentId] - The payment ID
+  /// [status] - The new status
+  /// [approved] - Whether the payment is approved
+  Future<void> updatePaymentStatus(String uid, String paymentId, String status, bool approved) async {
+    await _firebaseService.updatePaymentStatus(uid, paymentId, status, approved);
+  }
+  
   /// Get user data
   ///
   /// [uid] - The user ID to get data for

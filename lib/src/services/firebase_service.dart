@@ -1,5 +1,4 @@
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/foundation.dart';
 import 'user_service.dart';
 
@@ -10,27 +9,22 @@ import 'user_service.dart';
 /// for Firebase instances
 class FirebaseService {
   final firebase_auth.FirebaseAuth? _auth;
-  final GoogleSignIn? _googleSignIn;
   final UserService? _userService;
   
   /// Constructor that allows injecting dependencies for testing
   ///
   /// [auth] - Firebase Auth instance (defaults to FirebaseAuth.instance)
-  /// [googleSignIn] - Google Sign In instance (defaults to GoogleSignIn())
   /// [userService] - User service instance (defaults to UserService())
   FirebaseService([
     firebase_auth.FirebaseAuth? auth,
-    GoogleSignIn? googleSignIn,
     UserService? userService,
   ])  : _auth = auth,
-        _googleSignIn = googleSignIn,
         _userService = userService;
 
   /// Lazy initialization of Firebase Auth
   firebase_auth.FirebaseAuth get auth => _auth ?? firebase_auth.FirebaseAuth.instance;
   
-  /// Lazy initialization of Google Sign In
-  GoogleSignIn get googleSignIn => _googleSignIn ?? GoogleSignIn();
+
   
   /// Lazy initialization of User Service
   UserService get userService => _userService ?? UserService();
@@ -41,21 +35,21 @@ class FirebaseService {
   /// was cancelled or failed
   Future<firebase_auth.UserCredential?> signInWithGoogle() async {
     try {
-      // For web, we need to use a different approach due to popup restrictions
+      // Create a new GoogleAuthProvider instance
+      final googleProvider = firebase_auth.GoogleAuthProvider();
+      
+      // Add scopes if needed
+      googleProvider.addScope('email');
+      googleProvider.addScope('profile');
+      
+      // For web, we use signInWithPopup
       if (kIsWeb) {
-        // Create a new GoogleAuthProvider instance
-        final googleProvider = firebase_auth.GoogleAuthProvider();
-        
-        // Add scopes if needed
-        googleProvider.addScope('email');
-        googleProvider.addScope('profile');
-        
         // Set custom parameters for web
         googleProvider.setCustomParameters({
           'login_hint': 'user@example.com',
         });
         
-        // For web, we use signInWithPopup or signInWithRedirect
+        // For web, we use signInWithPopup
         final userCredential = await auth.signInWithPopup(googleProvider);
         
         // Create or update user document in Firestore
@@ -65,27 +59,8 @@ class FirebaseService {
         
         return userCredential;
       } else {
-        // For mobile platforms, use the traditional approach
-        // Trigger the authentication flow
-        final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
-        
-        if (googleUser == null) {
-          // The user canceled the sign-in
-          return null;
-        }
-
-        // Obtain the auth details from the request
-        final GoogleSignInAuthentication googleAuth = 
-            await googleUser.authentication;
-
-        // Create a new credential
-        final credential = firebase_auth.GoogleAuthProvider.credential(
-          accessToken: googleAuth.accessToken,
-          idToken: googleAuth.idToken,
-        );
-
-        // Once signed in, return the UserCredential
-        final userCredential = await auth.signInWithCredential(credential);
+          // Use Firebase Auth's built-in Google Sign-In for all platforms
+        final userCredential = await auth.signInWithPopup(googleProvider);
         
         // Create or update user document in Firestore
         if (userCredential.user != null) {
@@ -117,10 +92,9 @@ class FirebaseService {
     }
   }
 
-  /// Sign out the current user from both Google and Firebase
+  /// Sign out the current user from Firebase
   Future<void> signOut() async {
     try {
-      await googleSignIn.signOut();
       await auth.signOut();
     } catch (e) {
       debugPrint('Error signing out: $e');
@@ -154,6 +128,39 @@ class FirebaseService {
   /// Returns true if the user has admin role, false otherwise
   Future<bool> isAdmin(String uid) async {
     return await userService.isAdmin(uid);
+  }
+  
+  /// Update user profile
+  ///
+  /// [uid] - The user ID to update
+  /// [profileData] - The profile data to update
+  Future<void> updateUserProfile(String uid, Map<String, dynamic> profileData) async {
+    await userService.updateUserProfile(uid, profileData);
+  }
+  
+  /// Add a payment for a user
+  ///
+  /// [uid] - The user ID
+  /// [paymentData] - The payment data to add
+  Future<String> addPayment(String uid, Map<String, dynamic> paymentData) async {
+    return await userService.addPayment(uid, paymentData);
+  }
+  
+  /// Get user payments
+  ///
+  /// [uid] - The user ID
+  Future<List<Map<String, dynamic>>> getUserPayments(String uid) async {
+    return await userService.getUserPayments(uid);
+  }
+  
+  /// Update payment status (admin only)
+  ///
+  /// [uid] - The user ID
+  /// [paymentId] - The payment ID
+  /// [status] - The new status
+  /// [approved] - Whether the payment is approved
+  Future<void> updatePaymentStatus(String uid, String paymentId, String status, bool approved) async {
+    await userService.updatePaymentStatus(uid, paymentId, status, approved);
   }
   
   /// Get all user data from Firestore
