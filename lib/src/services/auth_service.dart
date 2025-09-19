@@ -106,6 +106,22 @@ class AuthService {
     return await _firebaseService.getUserData(uid);
   }
   
+  /// Update user active status (admin only)
+  ///
+  /// [uid] - The user ID
+  /// [isActive] - The new active status
+  Future<void> updateUserActiveStatus(String uid, bool isActive) async {
+    await _firebaseService.updateUserActiveStatus(uid, isActive);
+  }
+
+  /// Update user role (admin only)
+  ///
+  /// [uid] - The user ID
+  /// [role] - The new role
+  Future<void> updateUserRole(String uid, String role) async {
+    await _firebaseService.updateUserRole(uid, role);
+  }
+
   /// Check if a user is currently authenticated
   ///
   /// Returns true if a user is signed in, false otherwise

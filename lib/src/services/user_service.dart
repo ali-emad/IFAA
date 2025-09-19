@@ -163,6 +163,44 @@ class UserService {
     }
   }
 
+  // Update user active status (admin only)
+  Future<void> updateUserActiveStatus(String uid, bool isActive) async {
+    try {
+      final userDoc = firestore.collection('users').doc(uid);
+      await userDoc.update({
+        'isActive': isActive,
+        'lastUpdated': FieldValue.serverTimestamp(),
+      });
+    } on FirebaseException catch (e) {
+      // Handle Firebase-specific errors
+      debugPrint('Firebase error updating user active status: ${e.code} - ${e.message}');
+      rethrow;
+    } catch (e) {
+      // In production, you might want to use a logging framework instead
+      debugPrint('Error updating user active status: $e');
+      rethrow;
+    }
+  }
+
+  // Update user role (admin only)
+  Future<void> updateUserRole(String uid, String role) async {
+    try {
+      final userDoc = firestore.collection('users').doc(uid);
+      await userDoc.update({
+        'role': role,
+        'lastUpdated': FieldValue.serverTimestamp(),
+      });
+    } on FirebaseException catch (e) {
+      // Handle Firebase-specific errors
+      debugPrint('Firebase error updating user role: ${e.code} - ${e.message}');
+      rethrow;
+    } catch (e) {
+      // In production, you might want to use a logging framework instead
+      debugPrint('Error updating user role: $e');
+      rethrow;
+    }
+  }
+
   // Payment methods
   
   // Add a new payment record

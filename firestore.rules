@@ -12,8 +12,8 @@ service cloud.firestore {
       // Allow users to update their own document
       allow update: if request.auth != null && request.auth.uid == userId;
       
-      // Allow admins to read any user document
-      allow read: if request.auth != null && 
+      // Allow admins to read and update any user document
+      allow read, update: if request.auth != null && 
                   get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
                   
       // Payments subcollection

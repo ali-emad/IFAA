@@ -219,6 +219,7 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
         // Get user data from Firestore
         final userData = await _authService.getUserData(user.uid);
         debugPrint('User data loaded: $userData');
+        debugPrint('User active status from Firestore: ${userData?['isActive']}');
         
         // Get user role
         final userRole = await _authService.getUserRole(user.uid);
@@ -233,10 +234,12 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
             photoUrl: user.photoURL,
             joinDate: user.metadata.creationTime ?? DateTime.now(),
             membershipType: MembershipType.basic,
-            isActive: true,
+            isActive: userData?['isActive'] ?? true, // Load isActive from Firestore
             profile: Map<String, dynamic>.from(userData?['profile'] ?? {}),
             role: _mapStringToUserRole(userRole), // Add role
           );
+          
+          debugPrint('Current user active status after setState: ${_currentUser?.isActive}');
           
           // Initialize form controllers with user data
           _nameController.text = _currentUser!.name;
@@ -341,6 +344,7 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
           // Get user data from Firestore
           final userData = await _authService.getUserData(user.uid);
           debugPrint('User data loaded after sign-in: $userData');
+          debugPrint('User active status from Firestore: ${userData?['isActive']}');
           
           // Get user role
           final userRole = await _authService.getUserRole(user.uid);
@@ -355,10 +359,12 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
               photoUrl: user.photoURL,
               joinDate: user.metadata.creationTime ?? DateTime.now(),
               membershipType: MembershipType.basic,
-              isActive: true,
+              isActive: userData?['isActive'] ?? true, // Load isActive from Firestore
               profile: Map<String, dynamic>.from(userData?['profile'] ?? {}),
               role: _mapStringToUserRole(userRole), // Add role
             );
+            
+            debugPrint('Current user active status after setState: ${_currentUser?.isActive}');
             
             // Initialize form controllers with user data
             _nameController.text = _currentUser!.name;
@@ -470,6 +476,18 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
         return 'PREMIUM';
       case MembershipType.elite:
         return 'ELITE';
+    }
+  }
+
+  // Get user role label in capital letters
+  String _getUserRoleLabel(UserRole role) {
+    switch (role) {
+      case UserRole.admin:
+        return 'ADMIN';
+      case UserRole.editor:
+        return 'EDITOR';
+      case UserRole.member:
+        return 'MEMBER';
     }
   }
 
@@ -588,46 +606,56 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
                       ),
                       Row(
                         children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF10B981),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              _getMembershipLabel(
-                                  _currentUser?.membershipType ??
-                                      MembershipType.basic),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          if (_currentUser?.isActive == true)
-                            Container(
+                          GestureDetector(
+                            onTap: _currentUser?.role == UserRole.admin 
+                                ? _showUserRoleDialog 
+                                : null,
+                            child: Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 8,
                                 vertical: 4,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.2),
+                                color: const Color(0xFF10B981),
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              child: const Text(
-                                'ACTIVE',
-                                style: TextStyle(
+                              child: Text(
+                                _getUserRoleLabel(_currentUser?.role ?? UserRole.member),
+                                style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ),
+                          ),
+                          const SizedBox(width: 8),
+                          // Show active status badge
+                          GestureDetector(
+                            onTap: _currentUser?.role == UserRole.admin 
+                                ? _showUserActiveStatusDialog 
+                                : null,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: _currentUser?.isActive == true 
+                                    ? const Color(0xFF10B981) // Green for active
+                                    : const Color(0xFF6B7280), // Gray for inactive
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                _currentUser?.isActive == true ? 'ACTIVE' : 'INACTIVE',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ],
@@ -1392,6 +1420,203 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
         _samplePayments[index] = updatedPayment;
       }
     });
+  }
+
+  void _showUserRoleDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Change User Role'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              title: const Text('Member'),
+              leading: Radio<UserRole>(
+                value: UserRole.member,
+                groupValue: _currentUser?.role,
+                onChanged: (UserRole? value) {
+                  if (value != null) {
+                    _updateUserRole(value);
+                    Navigator.of(context).pop();
+                  }
+                },
+              ),
+            ),
+            ListTile(
+              title: const Text('Admin'),
+              leading: Radio<UserRole>(
+                value: UserRole.admin,
+                groupValue: _currentUser?.role,
+                onChanged: (UserRole? value) {
+                  if (value != null) {
+                    _updateUserRole(value);
+                    Navigator.of(context).pop();
+                  }
+                },
+              ),
+            ),
+            ListTile(
+              title: const Text('Editor'),
+              leading: Radio<UserRole>(
+                value: UserRole.editor,
+                groupValue: _currentUser?.role,
+                onChanged: (UserRole? value) {
+                  if (value != null) {
+                    _updateUserRole(value);
+                    Navigator.of(context).pop();
+                  }
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _updateUserRole(UserRole role) async {
+    if (_currentUser == null) return;
+
+    try {
+      // Convert UserRole enum to string
+      String roleString;
+      switch (role) {
+        case UserRole.admin:
+          roleString = 'admin';
+          break;
+        case UserRole.editor:
+          roleString = 'editor';
+          break;
+        case UserRole.member:
+          roleString = 'member';
+          break;
+      }
+
+      // Update user role in Firestore
+      await _authService.updateUserRole(_currentUser!.id, roleString);
+
+      // Update local user object
+      setState(() {
+        _currentUser = User(
+          id: _currentUser!.id,
+          name: _currentUser!.name,
+          email: _currentUser!.email,
+          photoUrl: _currentUser!.photoUrl,
+          joinDate: _currentUser!.joinDate,
+          membershipType: _currentUser!.membershipType,
+          isActive: _currentUser!.isActive,
+          profile: _currentUser!.profile,
+          role: role,
+        );
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('User role updated successfully!'),
+            backgroundColor: Color(0xFF10B981),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Error updating user role: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to update user role: ${e.toString()}'),
+            backgroundColor: const Color(0xFFEF4444),
+          ),
+        );
+      }
+    }
+  }
+
+  void _showUserActiveStatusDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Change User Active Status'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              title: const Text('Active'),
+              leading: Radio<bool>(
+                value: true,
+                groupValue: _currentUser?.isActive,
+                onChanged: (bool? value) {
+                  if (value != null) {
+                    _updateUserActiveStatus(value);
+                    Navigator.of(context).pop();
+                  }
+                },
+              ),
+            ),
+            ListTile(
+              title: const Text('Inactive'),
+              leading: Radio<bool>(
+                value: false,
+                groupValue: _currentUser?.isActive,
+                onChanged: (bool? value) {
+                  if (value != null) {
+                    _updateUserActiveStatus(value);
+                    Navigator.of(context).pop();
+                  }
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _updateUserActiveStatus(bool isActive) async {
+    if (_currentUser == null) return;
+
+    debugPrint('Updating user active status. Current: ${_currentUser?.isActive}, New: $isActive');
+
+    try {
+      // Update user active status in Firestore
+      await _authService.updateUserActiveStatus(_currentUser!.id, isActive);
+
+      // Update local user object
+      setState(() {
+        _currentUser = User(
+          id: _currentUser!.id,
+          name: _currentUser!.name,
+          email: _currentUser!.email,
+          photoUrl: _currentUser!.photoUrl,
+          joinDate: _currentUser!.joinDate,
+          membershipType: _currentUser!.membershipType,
+          isActive: isActive,
+          profile: _currentUser!.profile,
+          role: _currentUser!.role,
+        );
+      });
+
+      debugPrint('User active status updated. New status: ${_currentUser?.isActive}');
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('User status updated to ${isActive ? 'ACTIVE' : 'INACTIVE'}!'),
+            backgroundColor: isActive ? const Color(0xFF10B981) : const Color(0xFF6B7280),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Error updating user active status: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to update user active status: ${e.toString()}'),
+            backgroundColor: const Color(0xFFEF4444),
+          ),
+        );
+      }
+    }
   }
 }
 

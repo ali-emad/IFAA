@@ -163,6 +163,22 @@ class FirebaseService {
     await userService.updatePaymentStatus(uid, paymentId, status, approved);
   }
   
+  /// Update user active status (admin only)
+  ///
+  /// [uid] - The user ID
+  /// [isActive] - The new active status
+  Future<void> updateUserActiveStatus(String uid, bool isActive) async {
+    await userService.updateUserActiveStatus(uid, isActive);
+  }
+
+  /// Update user role (admin only)
+  ///
+  /// [uid] - The user ID
+  /// [role] - The new role
+  Future<void> updateUserRole(String uid, String role) async {
+    await userService.updateUserRole(uid, role);
+  }
+
   /// Get all user data from Firestore
   ///
   /// [uid] - The user ID to get data for
