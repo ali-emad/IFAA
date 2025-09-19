@@ -41,6 +41,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y imagemagick
           
+          # Create icons directory if it doesn't exist
+          mkdir -p web/icons
+          
           # Convert ifaa-1.png to ICO format for web favicon
           convert assets/icons/ifaa-1.png -resize 32x32 web/favicon.ico
           
@@ -52,6 +55,13 @@ jobs:
       
       - name: Build web
         run: flutter build web --release --base-href "/IFAA/"
+      
+      - name: Copy web icons to build directory
+        run: |
+          # Copy icons to build directory after Flutter build
+          mkdir -p build/web/icons
+          cp web/icons/* build/web/icons/
+          cp web/favicon.ico build/web/
       
       - name: Compress assets for faster loading
         run: |
@@ -177,10 +187,34 @@ jobs:
           
           # Update Kotlin version for compatibility
           cd android
-          if [ -f "build.gradle" ]; then
-            sed -i 's/ext.kotlin_version = .*/ext.kotlin_version = "1.9.24"/' build.gradle
+          echo "Current directory: $(pwd)"
+          echo "Files in current directory: $(ls -la)"
+          
+          # Check if build.gradle.kts exists and update Kotlin version
+          if [ -f "build.gradle.kts" ]; then
+            echo "Updating build.gradle.kts"
+            # In build.gradle.kts, we need to update the Kotlin version in the plugins block
+            # This is more complex with sed, so we'll just log that we found it
+            echo "build.gradle.kts found - Kotlin version update needs manual handling"
+          else
+            echo "build.gradle.kts not found in android directory"
           fi
-          sed -i 's/id "org.jetbrains.kotlin.android" version .*/id "org.jetbrains.kotlin.android" version "1.9.24" apply false/' settings.gradle
+          
+          # Check if settings.gradle.kts exists and update Kotlin version
+          if [ -f "settings.gradle.kts" ]; then
+            echo "Updating settings.gradle.kts"
+            # Update Kotlin version in settings.gradle.kts
+            sed -i 's/id("org.jetbrains.kotlin.android") version ".*" apply false/id("org.jetbrains.kotlin.android") version "1.9.24" apply false/' settings.gradle.kts
+          else
+            echo "settings.gradle.kts not found in android directory"
+            # Try the old settings.gradle format
+            if [ -f "settings.gradle" ]; then
+              echo "Found settings.gradle, updating it"
+              sed -i 's/id "org.jetbrains.kotlin.android" version .*/id "org.jetbrains.kotlin.android" version "1.9.24" apply false/' settings.gradle
+            else
+              echo "Neither settings.gradle.kts nor settings.gradle found"
+            fi
+          fi
           
           # Copy ifaa-1.png to Android app icon locations
           mkdir -p app/src/main/res/mipmap-mdpi
