@@ -606,52 +606,62 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
                       ),
                       Row(
                         children: [
-                          GestureDetector(
-                            onTap: _currentUser?.role == UserRole.admin 
-                                ? _showUserRoleDialog 
-                                : null,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF10B981),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(
-                                _getUserRoleLabel(_currentUser?.role ?? UserRole.member),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
+                          MouseRegion(
+                            cursor: _currentUser?.role == UserRole.admin 
+                                ? SystemMouseCursors.click 
+                                : SystemMouseCursors.basic,
+                            child: GestureDetector(
+                              onTap: _currentUser?.role == UserRole.admin 
+                                  ? _showUserRoleDialog 
+                                  : null,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF10B981),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  _getUserRoleLabel(_currentUser?.role ?? UserRole.member),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
                               ),
                             ),
                           ),
                           const SizedBox(width: 8),
                           // Show active status badge
-                          GestureDetector(
-                            onTap: _currentUser?.role == UserRole.admin 
-                                ? _showUserActiveStatusDialog 
-                                : null,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: _currentUser?.isActive == true 
-                                    ? const Color(0xFF10B981) // Green for active
-                                    : const Color(0xFF6B7280), // Gray for inactive
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(
-                                _currentUser?.isActive == true ? 'ACTIVE' : 'INACTIVE',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
+                          MouseRegion(
+                            cursor: _currentUser?.role == UserRole.admin 
+                                ? SystemMouseCursors.click 
+                                : SystemMouseCursors.basic,
+                            child: GestureDetector(
+                              onTap: _currentUser?.role == UserRole.admin 
+                                  ? _showUserActiveStatusDialog 
+                                  : null,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: _currentUser?.isActive == true 
+                                      ? const Color(0xFF10B981) // Green for active
+                                      : const Color(0xFF6B7280), // Gray for inactive
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  _currentUser?.isActive == true ? 'ACTIVE' : 'INACTIVE',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
                               ),
                             ),
@@ -776,7 +786,7 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
             children: [
               Expanded(
                 child: FilledButton.icon(
-                  onPressed: () => _makePayment('Membership Renewal'),
+                  onPressed: _showPaymentTypeDialog, // Changed from _makePayment('Membership Renewal')
                   icon: const Icon(Icons.payment),
                   label: const Text(
                     'Make Payment',
@@ -952,26 +962,19 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
 
           const SizedBox(height: 16),
 
-          Row(
-            children: [
-              Expanded(
-                child: _PaymentOptionCard(
-                  title: 'Membership Fee',
-                  amount: 120.0,
-                  description: 'Annual membership',
-                  onTap: () => _makePayment('Annual Membership Fee'),
-                ),
+          // Single button to select payment type
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              onPressed: _showPaymentTypeDialog,
+              icon: const Icon(Icons.payment),
+              label: const Text('Select Payment Type'),
+              style: FilledButton.styleFrom(
+                backgroundColor: const Color(0xFF1E3A8A),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _PaymentOptionCard(
-                  title: 'Training Camp',
-                  amount: 50.0,
-                  description: 'Monthly training',
-                  onTap: () => _makePayment('Training Camp Fee'),
-                ),
-              ),
-            ],
+            ),
           ),
 
           const SizedBox(height: 32),
@@ -1117,6 +1120,83 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
             _processPayment(description, method);
           }
         },
+      ),
+    );
+  }
+
+  // Show payment type selection dialog
+  void _showPaymentTypeDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Select Payment Type'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              title: const Text('Membership'),
+              onTap: () {
+                Navigator.of(context).pop();
+                _makePayment('Membership Fee');
+              },
+            ),
+            ListTile(
+              title: const Text('Training'),
+              onTap: () {
+                Navigator.of(context).pop();
+                _makePayment('Training Fee');
+              },
+            ),
+            ListTile(
+              title: const Text('Tournament'),
+              onTap: () {
+                Navigator.of(context).pop();
+                _makePayment('Tournament Fee');
+              },
+            ),
+            ListTile(
+              title: const Text('Other'),
+              onTap: () {
+                Navigator.of(context).pop();
+                _showCustomPaymentDialog();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Show custom payment dialog for "Other" payments
+  void _showCustomPaymentDialog() {
+    final descriptionController = TextEditingController();
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Custom Payment'),
+        content: TextField(
+          controller: descriptionController,
+          decoration: const InputDecoration(
+            labelText: 'Payment Description',
+            hintText: 'Enter payment description',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () {
+              if (descriptionController.text.isNotEmpty) {
+                Navigator.of(context).pop();
+                _makePayment(descriptionController.text);
+              }
+            },
+            child: const Text('Continue'),
+          ),
+        ],
       ),
     );
   }
