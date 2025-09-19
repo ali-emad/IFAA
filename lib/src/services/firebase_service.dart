@@ -78,6 +78,8 @@ class FirebaseService {
         debugPrint('Sign-in popup was closed by user.');
       } else if (e.code == 'cancelled-popup-request') {
         debugPrint('Sign-in popup request was cancelled.');
+      } else if (e.code == 'unauthorized-domain') {
+        debugPrint('This domain is not authorized for OAuth operations. Please contact the app administrator.');
       } else {
         debugPrint('Authentication failed: ${e.message}');
       }

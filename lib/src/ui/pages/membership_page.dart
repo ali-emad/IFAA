@@ -457,9 +457,19 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
     } catch (e) {
       debugPrint('Error during Google Sign-In: $e');
       if (mounted) {
+        String errorMessage = 'Failed to sign in with Google. Please try again.';
+        
+        // Check for specific Firebase errors
+        if (e.toString().contains('unauthorized-domain') || 
+            e.toString().contains('This domain is not authorized')) {
+          errorMessage = 'Sign-in is not authorized for this domain. Please contact the app administrator.';
+        } else if (e.toString().contains('popup-closed-by-user')) {
+          errorMessage = 'Sign-in was cancelled. Please try again.';
+        }
+        
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to sign in with Google: ${e.toString()}'),
+            content: Text(errorMessage),
             backgroundColor: const Color(0xFFEF4444),
           ),
         );

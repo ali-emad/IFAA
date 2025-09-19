@@ -16,7 +16,7 @@ To deploy manually:
 
 ```bash
 # Build for web with proper base href
-flutter build web --release --web-renderer html --base-href "/ifaa_app_template/"
+flutter build web --release --base-href "/ifaa_app_template/"
 
 # Deploy the build/web folder to GitHub Pages
 ```
@@ -247,7 +247,7 @@ The app uses Flutter with Material 3 and implements responsive navigation throug
 
 - Home: A hero card and quick links to the membership form and events.
 - About: Description of the association and its mission.
-- Vision: Bullet points for the organisation’s vision.
+- Vision: Bullet points for the organisation's vision.
 - Events: Card-based listing of upcoming events with a detail route.
 - Gallery: Simple grid of sample images.
 - Membership: A form capturing user details, including name, contact info and football registration preferences.
@@ -280,3 +280,7 @@ This template uses `Riverpod` for future state management, `Dio` for REST API ca
 - Point the `baseUrl` in `src/services/api_service.dart` to your WordPress or headless CMS.
 - Replace the mock data constructors in `Post` and `EventModel` with data models matching your API structure.
 - To deploy on the web, run `flutter build web` and host the `build/web` directory on your chosen platform.
+
+## Deployment Issues
+
+For common deployment issues and their solutions, see [DEPLOYMENT.md](DEPLOYMENT.md).
