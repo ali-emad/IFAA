@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:go_router/go_router.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/auth_service.dart';
 
@@ -245,6 +246,12 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
             email: user.email ?? '',
             photoUrl: user.photoURL,
             joinDate: user.metadata.creationTime ?? DateTime.now(),
+            lastLogin: userData?['lastLogin'] is Timestamp 
+                ? (userData?['lastLogin'] as Timestamp).toDate() 
+                : null,
+            lastUpdated: userData?['lastUpdated'] is Timestamp 
+                ? (userData?['lastUpdated'] as Timestamp).toDate() 
+                : null,
             membershipType: MembershipType.basic,
             isActive: userData?['isActive'] ?? true, // Load isActive from Firestore
             profile: Map<String, dynamic>.from(userData?['profile'] ?? {}),
@@ -370,6 +377,12 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
               email: user.email ?? '',
               photoUrl: user.photoURL,
               joinDate: user.metadata.creationTime ?? DateTime.now(),
+              lastLogin: userData?['lastLogin'] is Timestamp 
+                  ? (userData?['lastLogin'] as Timestamp).toDate() 
+                  : null,
+              lastUpdated: userData?['lastUpdated'] is Timestamp 
+                  ? (userData?['lastUpdated'] as Timestamp).toDate() 
+                  : null,
               membershipType: MembershipType.basic,
               isActive: userData?['isActive'] ?? true, // Load isActive from Firestore
               profile: Map<String, dynamic>.from(userData?['profile'] ?? {}),
@@ -411,6 +424,8 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
               email: user.email ?? '',
               photoUrl: user.photoURL,
               joinDate: user.metadata.creationTime ?? DateTime.now(),
+              lastLogin: null, // No last login data available
+              lastUpdated: null, // No last updated data available
               membershipType: MembershipType.basic,
               isActive: true,
               profile: {}, // Empty profile as fallback
@@ -683,10 +698,23 @@ class _MembershipPageState extends ConsumerState<MembershipPage>
                     ],
                   ),
                 ),
-                IconButton(
-                  onPressed: _logout,
-                  icon: const Icon(Icons.logout, color: Colors.white),
-                  tooltip: 'Logout',
+                Row(
+                  children: [
+                    IconButton(
+                      onPressed: _logout,
+                      icon: const Icon(Icons.logout, color: Colors.white),
+                      tooltip: 'Logout',
+                    ),
+                    if (_currentUser?.role == UserRole.admin)
+                      IconButton(
+                        onPressed: () {
+                          // Navigate to admin page
+                          context.go('/admin');
+                        },
+                        icon: const Icon(Icons.admin_panel_settings, color: Colors.white),
+                        tooltip: 'Admin Dashboard',
+                      ),
+                  ],
                 ),
               ],
             ),
@@ -1987,18 +2015,41 @@ class _PaymentCard extends StatelessWidget {
               if (_isAdmin(currentUserRole) && payment.status == PaymentStatus.pending)
                 Padding(
                   padding: const EdgeInsets.only(top: 8),
-                  child: FilledButton.tonal(
-                    onPressed: () {
-                      // Show approval dialog
-                      _showApprovalDialog(context, payment);
-                    },
-                    child: const Text(
-                      'Approve',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      FilledButton.tonal(
+                        onPressed: () {
+                          // Show approval dialog
+                          _showApprovalDialog(context, payment);
+                        },
+                        child: const Text(
+                          'Approve',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
-                    ),
+                      const SizedBox(width: 8),
+                      OutlinedButton(
+                        onPressed: () {
+                          // Show decline dialog
+                          _showDeclineDialog(context, payment);
+                        },
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: Color(0xFFEF4444)),
+                        ),
+                        child: const Text(
+                          'Decline',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFFEF4444),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
             ],
@@ -2041,7 +2092,7 @@ class _PaymentCard extends StatelessWidget {
       case PaymentStatus.pending:
         return 'PENDING';
       case PaymentStatus.failed:
-        return 'FAILED';
+        return 'DECLINED';
       case PaymentStatus.refunded:
         return 'REFUNDED';
     }
@@ -2135,6 +2186,94 @@ class _PaymentCard extends StatelessWidget {
               }
             },
             child: const Text('Approve'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Show decline dialog
+  void _showDeclineDialog(BuildContext context, Payment payment) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Decline Payment'),
+        content: Text('Are you sure you want to decline this payment of \$${payment.amount.toStringAsFixed(2)}?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFFEF4444),
+            ),
+            onPressed: () async {
+              Navigator.of(context).pop();
+              
+              try {
+                // Call the decline method if we have the required parameters
+                if (authService != null && currentUserId != null) {
+                  await authService!.updatePaymentStatus(
+                    currentUserId!,
+                    payment.id,
+                    'failed', // Set status to failed for declined payments
+                    false, // Not approved
+                  );
+                  
+                  // Create updated payment object
+                  final updatedPayment = Payment(
+                    id: payment.id,
+                    date: payment.date,
+                    amount: payment.amount,
+                    description: payment.description,
+                    status: PaymentStatus.failed, // Set to failed status
+                    method: payment.method,
+                    bankName: payment.bankName,
+                    accountNumber: payment.accountNumber,
+                    transactionId: payment.transactionId,
+                    reference: payment.reference,
+                    notes: payment.notes,
+                  );
+                  
+                  // Notify parent widget about the update
+                  if (onPaymentUpdated != null) {
+                    onPaymentUpdated!(updatedPayment);
+                  }
+                  
+                  // Show success message
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Payment declined successfully!'),
+                        backgroundColor: Color(0xFFEF4444),
+                      ),
+                    );
+                  }
+                } else {
+                  // Fallback for now
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Payment declined successfully!'),
+                        backgroundColor: Color(0xFFEF4444),
+                      ),
+                    );
+                  }
+                }
+              } catch (e) {
+                // Show error message
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Failed to decline payment. Please try again.'),
+                      backgroundColor: Color(0xFFEF4444),
+                    ),
+                  );
+                }
+              }
+            },
+            child: const Text('Decline'),
           ),
         ],
       ),

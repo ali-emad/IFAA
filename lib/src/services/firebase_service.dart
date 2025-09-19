@@ -187,6 +187,13 @@ class FirebaseService {
     return await userService.getUserData(uid);
   }
   
+  /// Get all users from Firestore (admin only)
+  ///
+  /// Returns a list of all users
+  Future<List<Map<String, dynamic>>> getAllUsers() async {
+    return await userService.getAllUsers();
+  }
+  
   /// Check if a user is currently authenticated
   ///
   /// Returns true if a user is signed in, false otherwise

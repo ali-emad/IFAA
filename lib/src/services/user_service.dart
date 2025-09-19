@@ -278,4 +278,29 @@ class UserService {
       rethrow;
     }
   }
+  
+  // Get all users (admin only)
+  Future<List<Map<String, dynamic>>> getAllUsers() async {
+    try {
+      final usersSnapshot = await firestore
+          .collection('users')
+          .orderBy('name')
+          .get();
+      
+      return usersSnapshot.docs
+          .map((doc) => {
+                'id': doc.id,
+                ...doc.data(),
+              })
+          .toList();
+    } on FirebaseException catch (e) {
+      // Handle Firebase-specific errors
+      debugPrint('Firebase error getting all users: ${e.code} - ${e.message}');
+      return [];
+    } catch (e) {
+      // In production, you might want to use a logging framework instead
+      debugPrint('Error getting all users: $e');
+      return [];
+    }
+  }
 }
