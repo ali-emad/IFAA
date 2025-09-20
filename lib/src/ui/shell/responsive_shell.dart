@@ -79,8 +79,12 @@ class _ResponsiveShellState extends ConsumerState<ResponsiveShell>
   @override
   Widget build(BuildContext context) {
     // Check if user is authenticated
-    final authService = ref.watch(authServiceProvider);
-    final bool isAuthenticated = authService.isAuthenticated;
+    final authState = ref.watch(authStateProvider);
+    final bool isAuthenticated = authState.when(
+      data: (authService) => authService?.isAuthenticated ?? false,
+      loading: () => false,
+      error: (error, stack) => false,
+    );
     
     return LayoutBuilder(builder: (context, constraints) {
       final isWide = constraints.maxWidth >= 900;
@@ -516,8 +520,12 @@ class _SoccerDrawer extends ConsumerWidget {
             child: Builder(
               builder: (context) {
                 // Get auth service from the ref
-                final authService = ref.watch(authServiceProvider);
-                final bool isAuthenticated = authService.isAuthenticated;
+                final authState = ref.watch(authStateProvider);
+                final bool isAuthenticated = authState.when(
+                  data: (authService) => authService?.isAuthenticated ?? false,
+                  loading: () => false,
+                  error: (error, stack) => false,
+                );
                 
                 // Create a copy of destinations with updated "Join" label if authenticated
                 final updatedDestinations = List<_NavigationDestination>.from(_destinations);
@@ -575,8 +583,12 @@ class _SoccerDrawer extends ConsumerWidget {
           Builder(
             builder: (context) {
               // Get auth service from the ref
-              final authService = ref.watch(authServiceProvider);
-              final bool isAuthenticated = authService.isAuthenticated;
+              final authState = ref.watch(authStateProvider);
+              final bool isAuthenticated = authState.when(
+                data: (authService) => authService?.isAuthenticated ?? false,
+                loading: () => false,
+                error: (error, stack) => false,
+              );
               
               return Container(
                 padding: const EdgeInsets.all(20),

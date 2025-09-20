@@ -6,3 +6,8 @@ final authServiceProvider = Provider<AuthService>((ref) {
   authService.initialize();
   return authService;
 });
+
+final authStateProvider = StreamProvider<AuthService?>((ref) {
+  final authService = ref.watch(authServiceProvider);
+  return authService.onAuthStateChanged.map((user) => authService);
+});
