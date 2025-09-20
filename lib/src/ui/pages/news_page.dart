@@ -1,21 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../../models/post.dart';
+import '../../models/news.dart';
+import '../../providers/news_provider.dart';
+import '../../services/auth_service.dart';
+import '../../providers/auth_provider.dart';
+import 'news_detail_page.dart';
 
-class NewsPage extends StatefulWidget {
+class NewsPage extends ConsumerStatefulWidget {
   const NewsPage({super.key});
   
   @override
-  State<NewsPage> createState() => _NewsPageState();
+  ConsumerState<NewsPage> createState() => _NewsPageState();
 }
 
-class _NewsPageState extends State<NewsPage> {
+class _NewsPageState extends ConsumerState<NewsPage> {
   String _selectedCategory = 'All';
   final List<String> _categories = ['All', 'Tournaments', 'Training', 'Community', 'Announcements'];
-  Post? _selectedPost;
+  News? _selectedPost;
   
-  void _selectPost(Post post) {
+  void _selectPost(News post) {
     setState(() {
       _selectedPost = post;
     });
@@ -29,159 +34,172 @@ class _NewsPageState extends State<NewsPage> {
   
   @override
   Widget build(BuildContext context) {
-    final posts = List.generate(10, Post.mock);
-    final filteredPosts = _filterPosts(posts);
+    // Watch for news list changes
+    final newsListAsync = ref.watch(newsListProvider);
     
-    // If a post is selected, show the full article view
-    if (_selectedPost != null) {
-      return _ArticleDetailView(
-        post: _selectedPost!,
-        onBack: _clearSelection,
-      );
-    }
-    
-    return CustomScrollView(
-      slivers: [
-        // Header Section
-        SliverToBoxAdapter(
-          child: Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Theme.of(context).colorScheme.secondary.withOpacity(0.1),
-                  Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                ],
-              ),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.secondary,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(
-                    Icons.article,
-                    color: Colors.white,
-                    size: 24,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Latest News',
-                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        'Stay updated with IFAA announcements, matches, and community updates',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: const Color(0xFF374151), // Better contrast than opacity
-                        ),
-                      ),
+    return newsListAsync.when(
+      data: (newsList) {
+        final filteredNews = _filterNews(newsList);
+        
+        // If a post is selected, show the full article view
+        if (_selectedPost != null) {
+          return _ArticleDetailView(
+            post: _selectedPost!,
+            onBack: _clearSelection,
+          );
+        }
+        
+        return CustomScrollView(
+          slivers: [
+            // Header Section
+            SliverToBoxAdapter(
+              child: Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Theme.of(context).colorScheme.secondary.withOpacity(0.1),
+                      Theme.of(context).colorScheme.primary.withOpacity(0.1),
                     ],
                   ),
                 ),
-              ],
-            ),
-          ),
-        ),
-        
-        // Category Chips
-        SliverToBoxAdapter(
-          child: Container(
-            height: 60,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: _categories.length,
-              itemBuilder: (context, index) {
-                final category = _categories[index];
-                final isSelected = _selectedCategory == category;
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: FilterChip(
-                    label: Text(category),
-                    selected: isSelected,
-                    onSelected: (selected) {
-                      setState(() {
-                        _selectedCategory = category;
-                      });
-                    },
-                    backgroundColor: Colors.transparent,
-                    selectedColor: Theme.of(context).colorScheme.secondary.withOpacity(0.15),
-                    checkmarkColor: Theme.of(context).colorScheme.secondary,
-                    labelStyle: TextStyle(
-                      color: isSelected 
-                          ? Theme.of(context).colorScheme.secondary
-                          : Theme.of(context).colorScheme.onSurface,
-                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.secondary,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.article,
+                        color: Colors.white,
+                        size: 24,
+                      ),
                     ),
-                  ),
-                );
-              },
-            ),
-          ),
-        ),
-        
-        // Featured Article (First Post)
-        if (filteredPosts.isNotEmpty)
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: _FeaturedArticleCard(
-                post: filteredPosts.first,
-                onTap: () => _selectPost(filteredPosts.first),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Latest News',
+                            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            'Stay updated with IFAA announcements, matches, and community updates',
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: const Color(0xFF374151), // Better contrast than opacity
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        
-        // Regular Articles
-        SliverPadding(
-          padding: const EdgeInsets.all(16),
-          sliver: SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                // Skip first post as it's featured
-                final post = filteredPosts[index + 1];
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
-                  child: _ArticleCard(
-                    post: post,
-                    onTap: () => _selectPost(post),
-                  ),
-                );
-              },
-              childCount: filteredPosts.length - 1,
+            
+            // Category Chips
+            SliverToBoxAdapter(
+              child: Container(
+                height: 60,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _categories.length,
+                  itemBuilder: (context, index) {
+                    final category = _categories[index];
+                    final isSelected = _selectedCategory == category;
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: FilterChip(
+                        label: Text(category),
+                        selected: isSelected,
+                        onSelected: (selected) {
+                          setState(() {
+                            _selectedCategory = category;
+                          });
+                        },
+                        backgroundColor: Colors.transparent,
+                        selectedColor: Theme.of(context).colorScheme.secondary.withOpacity(0.15),
+                        checkmarkColor: Theme.of(context).colorScheme.secondary,
+                        labelStyle: TextStyle(
+                          color: isSelected 
+                              ? Theme.of(context).colorScheme.secondary
+                              : Theme.of(context).colorScheme.onSurface,
+                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
             ),
-          ),
-        ),
-        
-        // Bottom spacing
-        const SliverToBoxAdapter(
-          child: SizedBox(height: 32),
-        ),
-      ],
+            
+            // Featured Article (First Post)
+            if (filteredNews.isNotEmpty)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: _FeaturedArticleCard(
+                    post: filteredNews.first,
+                    onTap: () => _selectPost(filteredNews.first),
+                  ),
+                ),
+              ),
+            
+            // Regular Articles
+            SliverPadding(
+              padding: const EdgeInsets.all(16),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    // Skip first post as it's featured
+                    if (index >= filteredNews.length - 1) return null;
+                    final post = filteredNews[index + 1];
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: _ArticleCard(
+                        post: post,
+                        onTap: () => _selectPost(post),
+                      ),
+                    );
+                  },
+                  childCount: filteredNews.length > 1 ? filteredNews.length - 1 : 0,
+                ),
+              ),
+            ),
+            
+            // Bottom spacing
+            const SliverToBoxAdapter(
+              child: SizedBox(height: 32),
+            ),
+          ],
+        );
+      },
+      loading: () => const SliverToBoxAdapter(
+        child: Center(child: CircularProgressIndicator()),
+      ),
+      error: (error, stack) => SliverToBoxAdapter(
+        child: Center(child: Text('Error loading news: $error')),
+      ),
     );
   }
   
-  List<Post> _filterPosts(List<Post> posts) {
-    if (_selectedCategory == 'All') return posts;
-    // In a real app, posts would have categories
-    return posts;
+  List<News> _filterNews(List<News> news) {
+    if (_selectedCategory == 'All') return news;
+    // In a real app, news would have categories
+    return news;
   }
 }
 
 class _FeaturedArticleCard extends StatelessWidget {
-  final Post post;
+  final News post;
   final VoidCallback onTap;
   
   const _FeaturedArticleCard({required this.post, required this.onTap});
@@ -202,7 +220,9 @@ class _FeaturedArticleCard extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
                 image: DecorationImage(
-                  image: CachedNetworkImageProvider(post.imageUrl),
+                  image: post.imageUrl != null 
+                    ? CachedNetworkImageProvider(post.imageUrl!) 
+                    : const AssetImage('assets/images/placeholder.png') as ImageProvider,
                   fit: BoxFit.cover,
                 ),
               ),
@@ -258,7 +278,9 @@ class _FeaturedArticleCard extends StatelessWidget {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            post.excerpt,
+                            post.content.length > 100 
+                              ? '${post.content.substring(0, 100)}...' 
+                              : post.content,
                             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                               color: Colors.white.withOpacity(0.9),
                             ),
@@ -275,7 +297,7 @@ class _FeaturedArticleCard extends StatelessWidget {
                               ),
                               const SizedBox(width: 4),
                               Text(
-                                DateFormat('MMM dd, yyyy').format(post.date),
+                                DateFormat('MMM dd, yyyy').format(post.createdAt),
                                 style: TextStyle(
                                   color: Colors.white.withOpacity(0.8),
                                   fontSize: 12,
@@ -298,7 +320,7 @@ class _FeaturedArticleCard extends StatelessWidget {
 }
 
 class _ArticleCard extends StatelessWidget {
-  final Post post;
+  final News post;
   final VoidCallback onTap;
   
   const _ArticleCard({required this.post, required this.onTap});
@@ -321,7 +343,9 @@ class _ArticleCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
                   image: DecorationImage(
-                    image: CachedNetworkImageProvider(post.imageUrl),
+                    image: post.imageUrl != null 
+                      ? CachedNetworkImageProvider(post.imageUrl!) 
+                      : const AssetImage('assets/images/placeholder.png') as ImageProvider,
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -343,7 +367,9 @@ class _ArticleCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      post.excerpt,
+                      post.content.length > 80 
+                        ? '${post.content.substring(0, 80)}...' 
+                        : post.content,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: const Color(0xFF374151), // Better contrast than opacity
                       ),
@@ -360,7 +386,7 @@ class _ArticleCard extends StatelessWidget {
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          DateFormat('MMM dd').format(post.date),
+                          DateFormat('MMM dd').format(post.createdAt),
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: const Color(0xFF6B7280), // Lighter gray for subtle info
                           ),
@@ -386,7 +412,7 @@ class _ArticleCard extends StatelessWidget {
 
 // Article Detail View Component
 class _ArticleDetailView extends StatelessWidget {
-  final Post post;
+  final News post;
   final VoidCallback onBack;
   
   const _ArticleDetailView({
@@ -440,7 +466,9 @@ class _ArticleDetailView extends StatelessWidget {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(16),
                     image: DecorationImage(
-                      image: NetworkImage(post.imageUrl),
+                      image: post.imageUrl != null 
+                        ? NetworkImage(post.imageUrl!) 
+                        : const AssetImage('assets/images/placeholder.png') as ImageProvider,
                       fit: BoxFit.cover,
                     ),
                   ),
@@ -468,7 +496,7 @@ class _ArticleDetailView extends StatelessWidget {
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      DateFormat('MMM dd, yyyy').format(post.date),
+                      DateFormat('MMM dd, yyyy').format(post.createdAt),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: const Color(0xFF6B7280), // Lighter gray for metadata
                       ),

@@ -9,3 +9,5 @@ export 'news_page.dart';
 export 'event_detail_page.dart';
 export 'news_detail_page.dart';
 export 'admin_page.dart';
+export 'news_management_page.dart';
+export 'add_news_page.dart';

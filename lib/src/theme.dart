@@ -87,6 +87,8 @@ ThemeData buildLightTheme() {
         ),
         elevation: 0,
         shadowColor: Colors.transparent,
+      ).copyWith(
+        overlayColor: WidgetStateProperty.all(Colors.transparent),
       ),
     ),
     
@@ -103,6 +105,8 @@ ThemeData buildLightTheme() {
           fontWeight: FontWeight.w700,
           letterSpacing: 0.5,
         ),
+      ).copyWith(
+        overlayColor: WidgetStateProperty.all(Colors.transparent),
       ),
     ),
     
@@ -296,6 +300,27 @@ ThemeData buildLightTheme() {
       thickness: 1,
       space: 1,
     ),
+
+    // Focus theme to prevent yellow focus indicators on web
+    focusColor: Colors.transparent,
+    highlightColor: Colors.transparent,
+    splashColor: Colors.transparent,
+
+    // Button themes to prevent yellow outlines on web
+    buttonTheme: const ButtonThemeData(
+      focusColor: Colors.transparent,
+      hoverColor: Colors.transparent,
+      highlightColor: Colors.transparent,
+    ),
+
+    textButtonTheme: TextButtonThemeData(
+      style: TextButton.styleFrom(
+        foregroundColor: colorScheme.primary,
+        textStyle: const TextStyle(fontWeight: FontWeight.w500),
+      ).copyWith(
+        overlayColor: WidgetStateProperty.all(Colors.transparent),
+      ),
+    ),
   );
 }
 
@@ -325,6 +350,64 @@ ThemeData buildDarkTheme() {
         fontWeight: FontWeight.w800,
         color: Colors.white,
         letterSpacing: -0.5,
+      ),
+    ),
+    
+    // Focus theme to prevent yellow focus indicators on web
+    focusColor: Colors.transparent,
+    highlightColor: Colors.transparent,
+    splashColor: Colors.transparent,
+
+    // Button themes to prevent yellow outlines on web
+    buttonTheme: const ButtonThemeData(
+      focusColor: Colors.transparent,
+      hoverColor: Colors.transparent,
+      highlightColor: Colors.transparent,
+    ),
+
+    textButtonTheme: TextButtonThemeData(
+      style: TextButton.styleFrom(
+        foregroundColor: colorScheme.primary,
+        textStyle: const TextStyle(fontWeight: FontWeight.w500),
+      ).copyWith(
+        overlayColor: WidgetStateProperty.all(Colors.transparent),
+      ),
+    ),
+    
+    filledButtonTheme: FilledButtonThemeData(
+      style: FilledButton.styleFrom(
+        minimumSize: const Size(140, 52),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        textStyle: const TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.5,
+        ),
+        elevation: 0,
+        shadowColor: Colors.transparent,
+      ).copyWith(
+        overlayColor: WidgetStateProperty.all(Colors.transparent),
+      ),
+    ),
+
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+        minimumSize: const Size(140, 52),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        side: const BorderSide(color: SoccerThemeColors.primaryGreen, width: 2),
+        textStyle: const TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.5,
+        ),
+      ).copyWith(
+        overlayColor: WidgetStateProperty.all(Colors.transparent),
       ),
     ),
   );

@@ -59,6 +59,14 @@ python -c "import yaml; f=open('.github/workflows/deploy.yml'); yaml.safe_load(f
 
 See [docs/testing-ci-workflow.md](docs/testing-ci-workflow.md) for detailed instructions.
 
+## 🔧 Firebase Storage CORS Fix
+
+If you encounter CORS errors when uploading images in the web version:
+
+1. **Automated setup (Windows)**: Double-click on `setup_cors.bat` in your project directory
+2. **Manual setup**: Follow the detailed instructions in [STORAGE_CORS_FIX.md](STORAGE_CORS_FIX.md)
+3. **Alternative solution**: Configure Firebase Storage rules directly in the Firebase Console using the [storage.rules](storage.rules) file
+
 ## Features
 
 ### 🔐 Modern Authentication System
@@ -198,89 +206,4 @@ flutter build web --release --web-renderer html --base-href "/"
 lib/
 ├── src/
 │   ├── models/          # Data models
-│   ├── ui/
-│   │   ├── pages/       # App pages
-│   │   └── shell/       # Navigation shell
-│   ├── theme.dart       # App theme
-│   └── router.dart      # App routing
-└── main.dart            # Entry point
-
-web/
-├── index.html           # Web entry point
-├── manifest.json        # PWA manifest
-└── favicon.ico          # App icon
-
-.github/
-└── workflows/
-    └── deploy.yml       # GitHub Actions deployment
-
-scripts/                 # Performance optimization scripts
-├── build-and-compress.bat
-├── compress-assets.js
-├── serve-compressed.bat
-├── serve-compressed.py
-├── test-ci-locally.bat
-├── validate-github-actions.py
-└── validate-workflow.bat
-
-docs/                    # Documentation
-├── caching-optimizations.md
-├── performance-optimizations.md
-└── testing-ci-workflow.md
 ```
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
-
-## License
-
-This project is open source and available under the [MIT License](LICENSE).
-
-## Overview
-
-The app uses Flutter with Material 3 and implements responsive navigation through `go_router` and a custom shell.  It includes example pages for:
-
-- Home: A hero card and quick links to the membership form and events.
-- About: Description of the association and its mission.
-- Vision: Bullet points for the organisation's vision.
-- Events: Card-based listing of upcoming events with a detail route.
-- Gallery: Simple grid of sample images.
-- Membership: A form capturing user details, including name, contact info and football registration preferences.
-- Contact: Address, email and phone details with mail launcher.
-- News: List of news posts with a detail view.
-
-This template uses `Riverpod` for future state management, `Dio` for REST API calls (stubbed) and `cached_network_image` for images.  Replace the API endpoints in `ApiService` with your CMS (e.g., WordPress) endpoints and integrate data providers as needed.
-
-## Getting Started
-
-1. Ensure you have Flutter installed (version >= 3.22).  Run `flutter doctor` to verify your environment.
-2. Create a new Flutter project:
-
-   ```sh
-   flutter create ifaa_app
-   cd ifaa_app
-   ```
-
-3. Replace the `pubspec.yaml` and `lib/` folder with the content of this template.
-4. Run `flutter pub get` to install dependencies.
-5. Start the app on a device or emulator:
-
-   ```sh
-   flutter run
-   ```
-
-## Customisation
-
-- Update the `seedColor` in `src/theme.dart` to match your brand.
-- Point the `baseUrl` in `src/services/api_service.dart` to your WordPress or headless CMS.
-- Replace the mock data constructors in `Post` and `EventModel` with data models matching your API structure.
-- To deploy on the web, run `flutter build web` and host the `build/web` directory on your chosen platform.
-
-## Deployment Issues
-
-For common deployment issues and their solutions, see [DEPLOYMENT.md](DEPLOYMENT.md).

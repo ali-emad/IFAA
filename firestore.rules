@@ -27,6 +27,29 @@ service cloud.firestore {
       }
     }
     
+    // News collection
+    match /news/{newsId} {
+      // Allow all users to read news
+      allow read: if true;
+      
+      // Allow authenticated users to create news (with limits enforced in code)
+      allow create: if request.auth != null;
+      
+      // Allow authors or admins to update their own news
+      allow update: if request.auth != null && 
+                    (resource.data.authorId == request.auth.uid ||
+                     get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+                     (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'editor' && 
+                      resource.data.authorId == request.auth.uid));
+      
+      // Allow authors or admins to delete their own news
+      allow delete: if request.auth != null && 
+                    (resource.data.authorId == request.auth.uid ||
+                     get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+                     (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'editor' && 
+                      resource.data.authorId == request.auth.uid));
+    }
+    
     // Allow public read access to general app data (adjust as needed)
     match /{document=**} {
       allow read, write: if false; // Default deny

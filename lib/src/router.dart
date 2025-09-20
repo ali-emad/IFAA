@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import 'ui/shell/responsive_shell.dart';
 import 'ui/pages/pages.dart';
+import 'ui/pages/news_management_page.dart';
 
 GoRouter buildRouter() => GoRouter(
       routes: [
@@ -30,6 +31,10 @@ GoRouter buildRouter() => GoRouter(
         GoRoute(
           path: '/admin',
           builder: (context, state) => const AdminPage(),
+        ),
+        GoRoute(
+          path: '/news-management',
+          builder: (context, state) => const NewsManagementPage(),
         ),
       ],
     );

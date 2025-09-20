@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:go_router/go_router.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/auth_service.dart';
+import 'add_news_page.dart';
 
 // Payment model for the admin page
 class AdminPayment {
@@ -687,6 +688,66 @@ class _AdminPageState extends ConsumerState<AdminPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // News Management Section (only shown on main admin dashboard)
+                  if (!_showingUserDetails && !_showingPayments) ...[
+                    Card(
+                      color: const Color(0xFF1E3A8A),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'News Management',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            const Text(
+                              'Manage news articles for the website',
+                              style: TextStyle(
+                                color: Colors.white70,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            Row(
+                              children: [
+                                FilledButton.icon(
+                                  onPressed: () {
+                                    context.go('/news-management');
+                                  },
+                                  icon: const Icon(Icons.newspaper),
+                                  label: const Text('Manage News'),
+                                ),
+                                const SizedBox(width: 12),
+                                OutlinedButton.icon(
+                                  onPressed: () {
+                                    // Navigate to add news page directly
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (context) => const AddNewsPage(),
+                                      ),
+                                    );
+                                  },
+                                  icon: const Icon(Icons.add),
+                                  label: const Text('Add News'),
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: Colors.white,
+                                    side: const BorderSide(color: Colors.white),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+                  
                   // Selected user info
                   if (_showingUserDetails && _selectedUser != null) ...[
                     Card(
