@@ -257,20 +257,51 @@ class UserService {
 
   // Update payment status (admin only)
   Future<void> updatePaymentStatus(String uid, String paymentId, String status, bool approved) async {
+    debugPrint('Attempting to update payment status for user: $uid, payment: $paymentId, status: $status, approved: $approved');
     try {
-      await firestore
-          .collection('users')
-          .doc(uid)
-          .collection('payments')
-          .doc(paymentId)
-          .update({
-        'status': status,
-        'approved': approved,
-        'updatedAt': FieldValue.serverTimestamp(),
+      // Use a transaction to ensure atomicity
+      await firestore.runTransaction((transaction) async {
+        final paymentRef = firestore
+            .collection('users')
+            .doc(uid)
+            .collection('payments')
+            .doc(paymentId);
+        
+        debugPrint('Payment reference: $paymentRef');
+        
+        // Get the current payment document
+        final paymentDoc = await transaction.get(paymentRef);
+        
+        if (!paymentDoc.exists) {
+          debugPrint('Payment document does not exist');
+          throw Exception('Payment document does not exist');
+        }
+        
+        debugPrint('Payment document exists, updating...');
+        debugPrint('Payment document data: ${paymentDoc.data()}');
+        
+        // Update the payment document
+        transaction.update(paymentRef, {
+          'status': status,
+          'approved': approved,
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+        
+        debugPrint('Payment document update queued in transaction');
       });
+      
+      debugPrint('Payment status update completed successfully');
     } on FirebaseException catch (e) {
       // Handle Firebase-specific errors
       debugPrint('Firebase error updating payment status: ${e.code} - ${e.message}');
+      
+      // Provide more specific error messages
+      if (e.code == 'permission-denied') {
+        debugPrint('Permission denied: Check Firestore security rules and user admin status');
+      } else if (e.code == 'not-found') {
+        debugPrint('Document not found: Check if the user ID and payment ID are correct');
+      }
+      
       rethrow;
     } catch (e) {
       // In production, you might want to use a logging framework instead

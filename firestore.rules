@@ -21,8 +21,8 @@ service cloud.firestore {
         // Allow users to read, create, and update their own payments
         allow read, create, update: if request.auth != null && request.auth.uid == userId;
         
-        // Allow admins to read any payment
-        allow read: if request.auth != null && 
+        // Allow admins to read and update any payment
+        allow read, update: if request.auth != null && 
                     get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
       }
     }

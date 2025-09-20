@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:ifaa/src/providers/auth_provider.dart';
 
-class ResponsiveShell extends StatefulWidget {
+class ResponsiveShell extends ConsumerStatefulWidget {
   final StatefulNavigationShell shell;
   const ResponsiveShell({super.key, required this.shell});
 
   @override
-  State<ResponsiveShell> createState() => _ResponsiveShellState();
+  ConsumerState<ResponsiveShell> createState() => _ResponsiveShellState();
 }
 
-class _ResponsiveShellState extends State<ResponsiveShell>
+class _ResponsiveShellState extends ConsumerState<ResponsiveShell>
     with TickerProviderStateMixin {
   late AnimationController _fabController;
 
@@ -76,12 +78,20 @@ class _ResponsiveShellState extends State<ResponsiveShell>
 
   @override
   Widget build(BuildContext context) {
+    // Check if user is authenticated
+    final authState = ref.watch(authStateProvider);
+    final bool isAuthenticated = authState.when(
+      data: (authService) => authService?.isAuthenticated ?? false,
+      loading: () => false,
+      error: (error, stack) => false,
+    );
+    
     return LayoutBuilder(builder: (context, constraints) {
       final isWide = constraints.maxWidth >= 900;
 
       return Scaffold(
         backgroundColor: const Color(0xFFF1F5F9),
-        appBar: _buildModernAppBar(context, isWide),
+        appBar: _buildModernAppBar(context, isWide, isAuthenticated),
         drawer: isWide ? null : _SoccerDrawer(onTapIndex: _goIndex),
         body: Container(
           decoration: const BoxDecoration(
@@ -100,14 +110,14 @@ class _ResponsiveShellState extends State<ResponsiveShell>
             child: widget.shell,
           ),
         ),
-        bottomNavigationBar: isWide ? null : _buildSoccerBottomNav(context),
+        bottomNavigationBar: isWide ? null : _buildSoccerBottomNav(context, isAuthenticated),
         floatingActionButton:
             null, // Removed floating action button from membership page as it conflicts with page content
       );
     });
   }
 
-  PreferredSizeWidget _buildModernAppBar(BuildContext context, bool isWide) {
+  PreferredSizeWidget _buildModernAppBar(BuildContext context, bool isWide, bool isAuthenticated) {
     return AppBar(
       backgroundColor: Colors.white,
       surfaceTintColor: Colors.transparent,
@@ -152,7 +162,7 @@ class _ResponsiveShellState extends State<ResponsiveShell>
       ),
       centerTitle: false,
       actions: [
-        if (isWide) ..._buildDesktopNavigationItems(context),
+        if (isWide) ..._buildDesktopNavigationItems(context, isAuthenticated),
         if (isWide)
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 4),
@@ -160,9 +170,9 @@ class _ResponsiveShellState extends State<ResponsiveShell>
               onPressed: () => context.go('/membership'),
               icon: const Icon(Icons.sports_soccer,
                   size: 20), // Increased from 18 to 20
-              label: const Text(
-                'JOIN',
-                style: TextStyle(
+              label: Text(
+                isAuthenticated ? 'DASHBOARD' : 'JOIN',
+                style: const TextStyle(
                   fontWeight: FontWeight.w700,
                   fontSize: 13,
                 ),
@@ -196,8 +206,24 @@ class _ResponsiveShellState extends State<ResponsiveShell>
     );
   }
 
-  List<Widget> _buildDesktopNavigationItems(BuildContext context) {
-    return _destinations.asMap().entries.map((entry) {
+  List<Widget> _buildDesktopNavigationItems(BuildContext context, bool isAuthenticated) {
+    // Create a copy of destinations with updated "Join" label if authenticated
+    final updatedDestinations = List<_NavigationDestination>.from(_destinations);
+    if (isAuthenticated) {
+      // Find the "Join" destination and update its label
+      for (int i = 0; i < updatedDestinations.length; i++) {
+        if (updatedDestinations[i].label == 'Join') {
+          updatedDestinations[i] = _NavigationDestination(
+            icon: Icons.dashboard_outlined,
+            selectedIcon: Icons.dashboard,
+            label: 'Dashboard',
+          );
+          break;
+        }
+      }
+    }
+    
+    return updatedDestinations.asMap().entries.map((entry) {
       final index = entry.key;
       final destination = entry.value;
       final isSelected = widget.shell.currentIndex == index;
@@ -238,7 +264,23 @@ class _ResponsiveShellState extends State<ResponsiveShell>
     }).toList();
   }
 
-  Widget _buildSoccerBottomNav(BuildContext context) {
+  Widget _buildSoccerBottomNav(BuildContext context, bool isAuthenticated) {
+    // Create a copy of destinations with updated "Join" label if authenticated
+    final updatedDestinations = List<_NavigationDestination>.from(_destinations);
+    if (isAuthenticated) {
+      // Find the "Join" destination and update its label
+      for (int i = 0; i < updatedDestinations.length; i++) {
+        if (updatedDestinations[i].label == 'Join') {
+          updatedDestinations[i] = _NavigationDestination(
+            icon: Icons.dashboard_outlined,
+            selectedIcon: Icons.dashboard,
+            label: 'Dashboard',
+          );
+          break;
+        }
+      }
+    }
+    
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -261,7 +303,7 @@ class _ResponsiveShellState extends State<ResponsiveShell>
           padding: const EdgeInsets.symmetric(vertical: 8),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: _destinations.asMap().entries.map((entry) {
+            children: updatedDestinations.asMap().entries.map((entry) {
               final index = entry.key;
               final destination = entry.value;
               final isSelected = widget.shell.currentIndex == index;
@@ -341,7 +383,7 @@ class _NavigationDestination {
   });
 }
 
-class _SoccerDrawer extends StatelessWidget {
+class _SoccerDrawer extends ConsumerWidget {
   final void Function(int) onTapIndex;
 
   // Soccer-themed navigation destinations (copy from parent)
@@ -391,7 +433,7 @@ class _SoccerDrawer extends StatelessWidget {
   const _SoccerDrawer({required this.onTapIndex});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Drawer(
       backgroundColor: Colors.white,
       child: Column(
@@ -475,88 +517,128 @@ class _SoccerDrawer extends StatelessWidget {
 
           // Navigation items
           Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              itemCount: _destinations.length,
-              itemBuilder: (context, i) {
-                final d = _destinations[i];
-                return Container(
-                  margin:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-                  child: ListTile(
-                    leading: Icon(
-                      d.icon,
-                      color: const Color(0xFF1E3A8A),
-                    ),
-                    title: Text(
-                      d.label,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF1F2937),
+            child: Builder(
+              builder: (context) {
+                // Get auth service from the ref
+                final authState = ref.watch(authStateProvider);
+                final bool isAuthenticated = authState.when(
+                  data: (authService) => authService?.isAuthenticated ?? false,
+                  loading: () => false,
+                  error: (error, stack) => false,
+                );
+                
+                // Create a copy of destinations with updated "Join" label if authenticated
+                final updatedDestinations = List<_NavigationDestination>.from(_destinations);
+                if (isAuthenticated) {
+                  // Find the "Join" destination and update its label
+                  for (int i = 0; i < updatedDestinations.length; i++) {
+                    if (updatedDestinations[i].label == 'Join') {
+                      updatedDestinations[i] = _NavigationDestination(
+                        icon: Icons.dashboard_outlined,
+                        selectedIcon: Icons.dashboard,
+                        label: 'Dashboard',
+                      );
+                      break;
+                    }
+                  }
+                }
+                
+                return ListView.builder(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  itemCount: updatedDestinations.length,
+                  itemBuilder: (context, i) {
+                    final d = updatedDestinations[i];
+                    return Container(
+                      margin:
+                          const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                      child: ListTile(
+                        leading: Icon(
+                          d.icon,
+                          color: const Color(0xFF1E3A8A),
+                        ),
+                        title: Text(
+                          d.label,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF1F2937),
+                          ),
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        onTap: () {
+                          Navigator.of(context).pop();
+                          onTapIndex(i);
+                        },
                       ),
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    onTap: () {
-                      Navigator.of(context).pop();
-                      onTapIndex(i);
-                    },
-                  ),
+                    );
+                  },
                 );
               },
             ),
           ),
 
           // Footer section
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: const BoxDecoration(
-              border: Border(
-                top: BorderSide(color: Color(0xFFE5E7EB), width: 1),
-              ),
-            ),
-            child: Column(
-              children: [
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF059669), Color(0xFF10B981)],
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    children: [
-                      const Icon(
-                        Icons.emoji_events,
-                        color: Colors.white,
-                        size: 24,
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'JOIN OUR TEAM',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 1,
-                        ),
-                      ),
-                      Text(
-                        'Become a member today',
-                        style: TextStyle(
-                          color: Colors.white.withOpacity(0.9),
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
+          Builder(
+            builder: (context) {
+              // Get auth service from the ref
+              final authState = ref.watch(authStateProvider);
+              final bool isAuthenticated = authState.when(
+                data: (authService) => authService?.isAuthenticated ?? false,
+                loading: () => false,
+                error: (error, stack) => false,
+              );
+              
+              return Container(
+                padding: const EdgeInsets.all(20),
+                decoration: const BoxDecoration(
+                  border: Border(
+                    top: BorderSide(color: Color(0xFFE5E7EB), width: 1),
                   ),
                 ),
-              ],
-            ),
+                child: Column(
+                  children: [
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF059669), Color(0xFF10B981)],
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        children: [
+                          const Icon(
+                            Icons.emoji_events,
+                            color: Colors.white,
+                            size: 24,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            isAuthenticated ? 'WELCOME BACK' : 'JOIN OUR TEAM',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 1,
+                            ),
+                          ),
+                          Text(
+                            isAuthenticated ? 'Continue your journey with us' : 'Become a member today',
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.9),
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
         ],
       ),
